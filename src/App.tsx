@@ -1,4 +1,5 @@
 import React from 'react'
+import useInputHandler from './hooks/useInputHandler'
 
 const WORDLIST_PATH = ""
 const WORD_LENGTH = 5
@@ -34,35 +35,96 @@ const App: React.FC = () => {
    const [m_rowIndex, setRowIndex] = React.useState<number>(0)
    const [m_gameData, setGameData] = React.useState<GameRow[]>([])
 
-   const handlePlayerInput = (evt: KeyboardEvent): void => {
+   useInputHandler((evt: KeyboardEvent) => {
       evt.preventDefault()
       if (!m_inputEnabled) return
-
-      // if (!isAlphabetChar && evt.key !== 'Enter' && evt.key !== 'Backspace') {
-      //    return
-      // }
-      
       if (!m_allowedKeys.has(evt.key)) return
 
+      const lettersSoFar = m_gameData[m_rowIndex].letters
+
+      // Handle alphabet input - append char to end-of-string
       const isAlphabetChar = /^[a-zA-Z]$/.test(evt.key)
-      if (isAlphabetChar) {
-         const lettersSoFar = m_gameData[m_rowIndex].letters
-         if (lettersSoFar.length < WORD_LENGTH) {
-            m_gameData[m_rowIndex].letters += evt.key
-         }
+      if (isAlphabetChar && lettersSoFar.length < WORD_LENGTH) {
+         setGameData(oldGameData => {
+            const newGameData: GameRow[] = [...oldGameData]
+            newGameData[m_rowIndex] = {
+               ...newGameData[m_rowIndex],
+               letters: newGameData[m_rowIndex].letters + evt.key
+            }
+            return newGameData
+         })
       }
-      else if (evt.key === 'Enter') {
-         
-      }
+      // Handle 'Delete' input 
       else if (evt.key === 'Backspace' || evt.key === 'Delete') {
-         const numLetters = m_gameData[m_rowIndex].letters.length 
-         const oneLessLetter = Math.max(0, numLetters - 1)
-         m_gameData[m_rowIndex].letters = m_gameData[m_rowIndex].letters.substring(0, oneLessLetter)
+         const oneLessLetter = Math.max(0, lettersSoFar.length - 1)
+
+         setGameData(oldGameData => {
+            const newGameData: GameRow[] = [...oldGameData]
+            newGameData[m_rowIndex] = {
+               ...newGameData[m_rowIndex],
+               letters: newGameData[m_rowIndex].letters.substring(0, oneLessLetter)
+            }
+            return newGameData
+         })
       }
-   }
+      // Handle 'Enter' input - Check the correctness of the current "GameRow"
+      else if (evt.key === 'Enter') {
+         if (lettersSoFar.length === WORD_LENGTH) {
+            // TODO: Perform 'shake'
+            // Num letters = WORD_LENGTH (Default: 5) - Check Row 
+            for (let i = 0; i < lettersSoFar.length; i++) {
+               const chr = lettersSoFar[i]
+
+               if (m_wordOfTheDay[i] === chr) { // CORRECT 
+                  setGameData(oldGameData => {
+                     const newGameData: GameRow[] = [...oldGameData]
+                     newGameData[m_rowIndex] = {
+                        ...newGameData[m_rowIndex],
+                        letterStates: [...newGameData[m_rowIndex].letterStates, LETTER_STATE.CORRECT]
+                     }
+                     return newGameData
+                  })
+               }
+               else if (m_wordOfTheDay.includes(chr)) { // HALF-CORRECT (CONTAINS LETTER) 
+                  setGameData(oldGameData => {
+                     const newGameData: GameRow[] = [...oldGameData]
+                     newGameData[m_rowIndex] = {
+                        ...newGameData[m_rowIndex],
+                        letterStates: [...newGameData[m_rowIndex].letterStates, LETTER_STATE.HALF_CORRECT]
+                     }
+                     return newGameData
+                  })
+               }
+               else { // WRONG
+                  setGameData(oldGameData => {
+                     const newGameData: GameRow[] = [...oldGameData]
+                     newGameData[m_rowIndex] = {
+                        ...newGameData[m_rowIndex],
+                        letterStates: [...newGameData[m_rowIndex].letterStates, LETTER_STATE.WRONG]
+                     }
+                     return newGameData
+                  })
+               }
+            }
+         }
+         else {
+            // TODO: Perform 'shake' to indicate 
+         }
+         // setRowIndex(prev => prev + 1)
+      }
+   })
+
+   React.useEffect(() => {
+      console.log("Current Word: ", m_gameData[m_rowIndex])
+   }, [m_gameData])
+
+   // React.useEffect(() => {
+   //    document.addEventListener('keydown', handlePlayerInput)
+   // }, [m_allowedKeys])
 
    // TODO
    React.useEffect(() => {
+      console.log("Start of Init()")
       // TODO
       // Load word list - Validate against 'WORD_LENGTH'
       // Temp solution for now
@@ -87,22 +149,21 @@ const App: React.FC = () => {
       allowedKeys.add("Enter")
       setAllowedKeys(allowedKeys)
 
+      // console.log("Setting Allowed Keys: ", allowedKeys)
+
       const gameData: GameRow[] = []
       for (let i = 0; i < NUM_ROWS; i++) {
          gameData.push(new GameRow())
       }
       setGameData(gameData)
 
-      // Register keyboard-handler/input-listener
-      document.addEventListener('keydown', evt => {
-         handlePlayerInput(evt)
-         console.log(m_gameData)
-      })
+      console.log("End of Init()")
+
+      return () => { }
    }, [])
 
    return (
-      <>
-      </>
+      <div></div>
    )
 }
 
