@@ -1,8 +1,9 @@
 import React from 'react'
 import useInputHandler from './hooks/useInputHandler'
+import GridRow from './components/GridRow'
 
 const WORDLIST_PATH = ""
-const WORD_LENGTH = 5
+export const WORD_LENGTH = 5
 const NUM_ROWS = 5
 
 const randIntRange = (min: number, max: number): number => {
@@ -11,13 +12,13 @@ const randIntRange = (min: number, max: number): number => {
    return Math.floor(Math.random() * (max - min)) + min
 }
 
-enum LETTER_STATE {
+export enum LETTER_STATE {
    CORRECT, // Correct letter - Correct position
    HALF_CORRECT, // Correct letter - Wrong position
    WRONG // Self-explanatory
 }
 
-class GameRow {
+export class GameRow {
    letters: string
    letterStates: LETTER_STATE[]
 
@@ -49,7 +50,7 @@ const App: React.FC = () => {
             const newGameData: GameRow[] = [...oldGameData]
             newGameData[m_rowIndex] = {
                ...newGameData[m_rowIndex],
-               letters: newGameData[m_rowIndex].letters + evt.key
+               letters: newGameData[m_rowIndex].letters + evt.key.toLowerCase()
             }
             return newGameData
          })
@@ -106,25 +107,25 @@ const App: React.FC = () => {
                   })
                }
             }
+            setRowIndex(prev => prev + 1)
          }
          else {
             // TODO: Perform 'shake' to indicate 
          }
-         // setRowIndex(prev => prev + 1)
       }
    })
 
-   React.useEffect(() => {
-      console.log("Current Word: ", m_gameData[m_rowIndex])
-   }, [m_gameData])
-
+   // DEBUG
    // React.useEffect(() => {
-   //    document.addEventListener('keydown', handlePlayerInput)
-   // }, [m_allowedKeys])
+   //    console.log("Current Word: ", m_gameData[m_rowIndex])
+   // }, [m_gameData])
 
-   // TODO
+   // DEBUG
    React.useEffect(() => {
-      console.log("Start of Init()")
+      console.log("Word of the Day: ", m_wordOfTheDay)
+   }, [m_wordOfTheDay])
+
+   React.useEffect(() => {
       // TODO
       // Load word list - Validate against 'WORD_LENGTH'
       // Temp solution for now
@@ -149,21 +150,19 @@ const App: React.FC = () => {
       allowedKeys.add("Enter")
       setAllowedKeys(allowedKeys)
 
-      // console.log("Setting Allowed Keys: ", allowedKeys)
-
       const gameData: GameRow[] = []
       for (let i = 0; i < NUM_ROWS; i++) {
          gameData.push(new GameRow())
       }
       setGameData(gameData)
-
-      console.log("End of Init()")
-
-      return () => { }
    }, [])
 
    return (
-      <div></div>
+      <div >{
+         m_gameData.map((gameRow, idx) => {
+            return <GridRow key={idx} gameRow={gameRow} />
+         })
+      }</div>
    )
 }
 
