@@ -8,8 +8,8 @@ interface GridRowProps {
 
 const getGridBlockStyles = (letterState: LETTER_STATE): React.CSSProperties => {
    const css: React.CSSProperties = {}
-   css.width = "70px"
-   css.height = "70px"
+   css.width = "60px"
+   css.height = "60px"
    css.outline = "2px solid black"
    css.textAlign = "center"
    css.fontSize = "3rem"

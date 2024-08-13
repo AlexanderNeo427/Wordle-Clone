@@ -1,10 +1,11 @@
 import React from 'react'
 import useInputHandler from './hooks/useInputHandler'
 import GridRow from './components/GridRow'
+import GameKeyboard from './components/GameKeyboard'
 
 const WORDLIST_PATH = ""
 export const WORD_LENGTH = 5
-const NUM_ROWS = 5
+const NUM_ROWS = 6
 
 // Style Params
 const GAP_PX = 10
@@ -21,6 +22,14 @@ export enum LETTER_STATE {
    WRONG // Self-explanatory
 }
 
+// For keyboard rendering
+export enum KEY_STATE {
+   UNKNOWN, 
+   WRONG, 
+   EXISTS, 
+   CORRECT
+}
+
 export class GameRow {
    letters: string
    letterStates: LETTER_STATE[]
@@ -35,14 +44,17 @@ const App: React.FC = () => {
    const [m_wordOfTheDay, setWordOfTheDay] = React.useState<string>("")
 
    const [m_inputEnabled, setInputEnabled] = React.useState<boolean>(true)
-   const [m_allowedKeys, setAllowedKeys] = React.useState<Set<string>>(new Set())
+   // const [m_allowedKeys, setAllowedKeys] = React.useState<Set<string>>(new Set())
    const [m_rowIndex, setRowIndex] = React.useState<number>(0)
    const [m_gameData, setGameData] = React.useState<GameRow[]>([])
+
+   // For keyboard rendering - so we know what color to highlight them
+   const [m_keyData, setKeyData] = React.useState<Map<string, KEY_STATE>>(new Map()) 
 
    useInputHandler((evt: KeyboardEvent) => {
       evt.preventDefault()
       if (!m_inputEnabled) return
-      if (!m_allowedKeys.has(evt.key)) return
+      // if (!m_allowedKeys.has(evt.key)) return
 
       const lettersSoFar = m_gameData[m_rowIndex].letters
 
@@ -87,6 +99,11 @@ const App: React.FC = () => {
                      }
                      return newGameData
                   })
+                  setKeyData(oldKeyData => {
+                     const newKeyData = new Map(oldKeyData)
+                     newKeyData.set(chr, KEY_STATE.CORRECT)
+                     return newKeyData
+                  })
                }
                else if (m_wordOfTheDay.includes(chr)) { // HALF-CORRECT (CONTAINS LETTER) 
                   setGameData(oldGameData => {
@@ -97,6 +114,13 @@ const App: React.FC = () => {
                      }
                      return newGameData
                   })
+                  if (m_keyData.get(chr) === KEY_STATE.UNKNOWN) {
+                     setKeyData(oldKeyData => {
+                        const newKeyData = new Map(oldKeyData)
+                        newKeyData.set(chr, KEY_STATE.EXISTS)
+                        return newKeyData
+                     })
+                  }
                }
                else { // WRONG
                   setGameData(oldGameData => {
@@ -107,6 +131,13 @@ const App: React.FC = () => {
                      }
                      return newGameData
                   })
+                  if (m_keyData.get(chr) === KEY_STATE.UNKNOWN) {
+                     setKeyData(oldKeyData => {
+                        const newKeyData = new Map(oldKeyData)
+                        newKeyData.set(chr, KEY_STATE.WRONG)
+                        return newKeyData
+                     })
+                  }
                }
             }
             setRowIndex(prev => prev + 1)
@@ -140,17 +171,30 @@ const App: React.FC = () => {
       setWordOfTheDay(randomWord)
 
       // Populate 'm_allowedKeys'
-      const allowedKeys = new Set<string>()
-      for (let i = 65; i <= 90; i++) {
-         allowedKeys.add(String.fromCharCode(i))
-      }
+      // const allowedKeys = new Set<string>()
+      // for (let i = 65; i <= 90; i++) {
+      //    allowedKeys.add(String.fromCharCode(i))
+      // }
+      // for (let i = 97; i <= 122; i++) {
+      //    allowedKeys.add(String.fromCharCode(i))
+      // }
+      // allowedKeys.add("Backspace")
+      // allowedKeys.add("Delete")
+      // allowedKeys.add("Enter")
+ 
+      const allowedKeys: string[] = []
       for (let i = 97; i <= 122; i++) {
-         allowedKeys.add(String.fromCharCode(i))
+         allowedKeys.push(String.fromCharCode(i))
       }
-      allowedKeys.add("Backspace")
-      allowedKeys.add("Delete")
-      allowedKeys.add("Enter")
-      setAllowedKeys(allowedKeys)
+      allowedKeys.push("Backspace")
+      allowedKeys.push("Delete")
+      allowedKeys.push("Enter")
+      
+      const keyData = new Map<string, KEY_STATE>()
+      allowedKeys.forEach(key => {
+         keyData.set(key, KEY_STATE.UNKNOWN)
+      })
+      setKeyData(keyData)
 
       const gameData: GameRow[] = []
       for (let i = 0; i < NUM_ROWS; i++) {
@@ -162,7 +206,7 @@ const App: React.FC = () => {
    return (
       <div>
          {/* ---- HEADER/NAVBAR ----- */}
-         <nav style={{ display: "flex", justifyContent: "space-between" }}>
+         <nav style={{ display: "flex", justifyContent: "space-between", padding: "0.8rem" }}>
             <button>BURGER MENU</button>
             <div style={{ display: "flex" }}>
                <button>HINT</button>
@@ -174,24 +218,19 @@ const App: React.FC = () => {
          </nav>
 
          {/* ----- GAME BODY ------ */}
-         <div style={{ display: "flex", flexDirection: "column", gap: String(GAP_PX) + "px" }}>
-            {
-               m_gameData.map((gameRow, idx) => {
-                  return <GridRow key={idx} gameRow={gameRow} gap_px={GAP_PX} />
-               })
-            }
+         <div style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: String(GAP_PX) + "px" }}>
+               {
+                  m_gameData.map((gameRow, idx) => {
+                     return <GridRow key={idx} gameRow={gameRow} gap_px={GAP_PX} />
+                  })
+               }
+            </div>
+
          </div>
 
          {/* ----- ON-SCREEN KEYBOARD ----- */}
-         <div style={{ display: "flex", flexDirection: "column" }}>
-            <div>
-
-            </div>
-            <div>
-
-            </div>
-            <div></div>
-         </div>
+         <GameKeyboard keyData={m_keyData}/>
       </div>
 
    )
