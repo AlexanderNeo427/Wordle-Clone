@@ -6,6 +6,9 @@ const WORDLIST_PATH = ""
 export const WORD_LENGTH = 5
 const NUM_ROWS = 5
 
+// Style Params
+const GAP_PX = 10
+
 const randIntRange = (min: number, max: number): number => {
    min = Math.ceil(min)
    max = Math.floor(max)
@@ -71,7 +74,6 @@ const App: React.FC = () => {
       // Handle 'Enter' input - Check the correctness of the current "GameRow"
       else if (evt.key === 'Enter') {
          if (lettersSoFar.length === WORD_LENGTH) {
-            // TODO: Perform 'shake'
             // Num letters = WORD_LENGTH (Default: 5) - Check Row 
             for (let i = 0; i < lettersSoFar.length; i++) {
                const chr = lettersSoFar[i]
@@ -110,7 +112,7 @@ const App: React.FC = () => {
             setRowIndex(prev => prev + 1)
          }
          else {
-            // TODO: Perform 'shake' to indicate 
+            // TODO: Perform 'shake' to indicate "insufficient length"
          }
       }
    })
@@ -158,11 +160,40 @@ const App: React.FC = () => {
    }, [])
 
    return (
-      <div >{
-         m_gameData.map((gameRow, idx) => {
-            return <GridRow key={idx} gameRow={gameRow} />
-         })
-      }</div>
+      <div>
+         {/* ---- HEADER/NAVBAR ----- */}
+         <nav style={{ display: "flex", justifyContent: "space-between" }}>
+            <button>BURGER MENU</button>
+            <div style={{ display: "flex" }}>
+               <button>HINT</button>
+               <button>STAT</button>
+               <button>HowToPlay</button>
+               <button>SETTINGS</button>
+               <button>SUBSCRIBE TO GAMES</button>
+            </div>
+         </nav>
+
+         {/* ----- GAME BODY ------ */}
+         <div style={{ display: "flex", flexDirection: "column", gap: String(GAP_PX) + "px" }}>
+            {
+               m_gameData.map((gameRow, idx) => {
+                  return <GridRow key={idx} gameRow={gameRow} gap_px={GAP_PX} />
+               })
+            }
+         </div>
+
+         {/* ----- ON-SCREEN KEYBOARD ----- */}
+         <div style={{ display: "flex", flexDirection: "column" }}>
+            <div>
+
+            </div>
+            <div>
+
+            </div>
+            <div></div>
+         </div>
+      </div>
+
    )
 }
 

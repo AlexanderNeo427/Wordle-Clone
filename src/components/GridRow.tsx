@@ -1,35 +1,40 @@
 import React from 'react'
-import { GameRow, WORD_LENGTH } from '../App'
+import { GameRow, LETTER_STATE, WORD_LENGTH } from '../App'
 
 interface GridRowProps {
    gameRow: GameRow
+   gap_px: number
 }
 
-const getGridBlockStyles = (): React.CSSProperties => {
+const getGridBlockStyles = (letterState: LETTER_STATE): React.CSSProperties => {
    const css: React.CSSProperties = {}
-   css.width = "40px"
-   css.height = "40px"
+   css.width = "70px"
+   css.height = "70px"
    css.outline = "2px solid black"
    css.textAlign = "center"
+   css.fontSize = "3rem"
+   switch (letterState) {
+      case LETTER_STATE.CORRECT:
+         css.background = 'green'
+         break
+      case LETTER_STATE.HALF_CORRECT:
+         css.background = 'yellow'
+         break
+      case LETTER_STATE.WRONG:
+         css.background = 'grey'
+         break
+   }
    return css
 }
 
 const GridRow: React.FC<GridRowProps> = props => {
    return (
-      <div style={{ display: "flex" }}>
-         { 
+      <div style={{ display: "flex", gap: String(props.gap_px) + "px" }}>
+         {
             (() => {
-               let lettersToDisplay = props.gameRow.letters
-               lettersToDisplay = lettersToDisplay.padEnd(WORD_LENGTH, " ")
-
-               console.log("Letters to Display Len: ", lettersToDisplay.length)
-               console.log("Letters to Display: ", lettersToDisplay)
-               const jsxElems: JSX.Element[] = lettersToDisplay.split("").map(chr => {
-                  return (
-                     <div style={getGridBlockStyles()}>
-                        {chr}
-                     </div>
-                  )
+               const lettersToDisplay = props.gameRow.letters.padEnd(WORD_LENGTH, " ")
+               const jsxElems: JSX.Element[] = lettersToDisplay.split("").map((chr, idx) => {
+                  return <div style={getGridBlockStyles(props.gameRow.letterStates[idx])}>{chr}</div>
                })
                return jsxElems
             })()
