@@ -9,7 +9,7 @@ interface WordleGameProps {
 const WordleGame: React.FC<WordleGameProps> = props => {
    return (
       <div style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
-         <div style={{ display: "flex", flexDirection: "column", gap: String(5) + "px" }}>
+         <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
             {/* {
                   m_gameData.map((GameRowData, idx) => {
                      return <GridRow key={idx} GameRowData={GameRowData} gap_px={GAP_PX} />

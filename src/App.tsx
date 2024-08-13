@@ -2,7 +2,7 @@ import React from 'react'
 import useInputHandler from './hooks/useInputHandler'
 import Navbar from './components/Navbar'
 import WordleGame from './components/WordleGame'
-import { GameData, GameLogic } from './game/GameLogicHandler'
+import { GAME_OP_STATUS, GameData, GameLogic } from './game/GameLogicHandler'
 
 const WORDLIST_PATH = ""
 
@@ -12,14 +12,20 @@ const GAP_PX = 10
 const App: React.FC = () => {
    const [m_gameData, setGameData] = React.useState<GameData>(new GameData())
 
-   useInputHandler((evt: KeyboardEvent) => {
-      evt.preventDefault()
-   })
-
+   // Initialization
    React.useEffect(() => {
       setGameData(GameLogic.createGameData(6, 5))
    }, [])
 
+   useInputHandler((evt: KeyboardEvent) => {
+      evt.preventDefault()
+      const opResult = GameLogic.handlePlayerInput(m_gameData, evt.key)
+      if (opResult.status === GAME_OP_STATUS.SUCCESS) {
+         setGameData(opResult.gameData)
+      }
+      console.log("End inputHandler, key: ", evt.key)
+   })
+   
    return (
       <div>
          <Navbar /> 

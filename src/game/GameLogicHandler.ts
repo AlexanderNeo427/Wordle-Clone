@@ -45,7 +45,7 @@ export class GameData {
     }
 }
 
-export enum GAME_STATUS {
+export enum GAME_OP_STATUS {
     SUCCESS, 
     FAIL, 
     NOT_ENOUGH_LETTERS, 
@@ -53,10 +53,10 @@ export enum GAME_STATUS {
 }
 
 export class GameOperationResult {
-    status: GAME_STATUS
+    status: GAME_OP_STATUS
     gameData: GameData
 
-    constructor(status: GAME_STATUS, gameData: GameData) {
+    constructor(status: GAME_OP_STATUS, gameData: GameData) {
         this.status = status
         this.gameData = gameData
     }
@@ -93,21 +93,21 @@ export class GameLogic {
             return this.onAlphabetInput(gameData, key)
         }
 
-        return new GameOperationResult(GAME_STATUS.SUCCESS, gameData)
+        return new GameOperationResult(GAME_OP_STATUS.SUCCESS, gameData)
     }
 
     private static onAlphabetInput(gameData: GameData, key: string): GameOperationResult {
         // if (charsSoFar.length < WORD_LENGTH) {
         //     const rowLength = gameData.gameBlocks[gameData.rowIndex].length
         // }
-        return new GameOperationResult(GAME_STATUS.SUCCESS, gameData)
+        return new GameOperationResult(GAME_OP_STATUS.SUCCESS, gameData)
     }
 
     private static onDeleteInput(gameData: GameData): GameOperationResult {
-        return new GameOperationResult(GAME_STATUS.SUCCESS, gameData)
+        return new GameOperationResult(GAME_OP_STATUS.SUCCESS, gameData)
     }
 
     private static onEnterInput(gameData: GameData): GameOperationResult {
-        return new GameOperationResult(GAME_STATUS.SUCCESS, gameData)
+        return new GameOperationResult(GAME_OP_STATUS.SUCCESS, gameData)
     }
 }

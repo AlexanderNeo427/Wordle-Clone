@@ -12,13 +12,12 @@ const getGridBlockStyles = (): React.CSSProperties => {
    css.outline = "2px solid black"
    css.textAlign = "center"
    css.fontSize = "3rem"
-
    return css
 }
 
 const GridRow: React.FC<GridRowProps> = props => {
    return (
-      <div style={{ display: "flex", gap: "5px" }}>
+      <div style={{ display: "flex", gap: "12px" }}>
          {
             props.gameBlockArray.map(gameBlock => {
                return (

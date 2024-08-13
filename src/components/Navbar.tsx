@@ -1,15 +1,16 @@
 import React from 'react'
+import './Navbar.css'
 
 const Navbar: React.FC = props => {
    return (
-      <nav style={{ display: "flex", justifyContent: "space-between", padding: "0.8rem" }}>
-         <button>BURGER MENU</button>
+      <nav className='navbar'> 
+         <span className="material-symbols-outlined navbar-btn">menu</span>
          <div style={{ display: "flex" }}>
-            <button>HINT</button>
-            <button>STAT</button>
-            <button>HowToPlay</button>
-            <button>SETTINGS</button>
-            <button>SUBSCRIBE TO GAMES</button>
+            <span className="material-symbols-outlined navbar-btn">lightbulb</span>
+            <span className="material-symbols-outlined navbar-btn">bar_chart</span>
+            <span className="material-symbols-outlined navbar-btn">help</span>
+            <span className="material-symbols-outlined navbar-btn">settings</span>
+            <button>Subscribe to Games</button>
          </div>
       </nav>
    )
