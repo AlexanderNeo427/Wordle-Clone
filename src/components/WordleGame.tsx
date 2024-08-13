@@ -1,6 +1,12 @@
 import React from 'react'
+import { GameData, GameLogic } from '../game/GameLogicHandler'
+import GridRow from './GridRow'
 
-const WordleGame = props => {
+interface WordleGameProps {
+   gameData: GameData
+}
+
+const WordleGame: React.FC<WordleGameProps> = props => {
    return (
       <div style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
          <div style={{ display: "flex", flexDirection: "column", gap: String(5) + "px" }}>
@@ -9,6 +15,14 @@ const WordleGame = props => {
                      return <GridRow key={idx} GameRowData={GameRowData} gap_px={GAP_PX} />
                   })
                } */}
+            {
+               props.gameData.gameBlockArrays.map(gameBlockArray => { 
+                  console.log(props.gameData)
+                  return (
+                     <GridRow gameBlockArray={gameBlockArray}/> 
+                  )
+               })
+            }
          </div>
 
       </div>

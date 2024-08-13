@@ -1,6 +1,6 @@
 import React from 'react'
 
-const Navbar = props => {
+const Navbar: React.FC = props => {
    return (
       <nav style={{ display: "flex", justifyContent: "space-between", padding: "0.8rem" }}>
          <button>BURGER MENU</button>

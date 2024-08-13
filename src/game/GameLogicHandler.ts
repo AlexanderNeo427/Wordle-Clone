@@ -1,4 +1,7 @@
-const randIntRange = (min: number, max: number): number => {
+export const WORD_LENGTH = 5
+export const NUM_ROWS = 6
+
+export const randIntRange = (min: number, max: number): number => {
     min = Math.ceil(min)
     max = Math.floor(max)
     return Math.floor(Math.random() * (max - min)) + min
@@ -21,35 +24,24 @@ export class GameBlockData {
     }
 }
 
-export class GameRowData {
-    colIndex: number
-    gameBlocks: GameBlockData[]
-
-    constructor() { 
-        this.colIndex = 0
-        this.gameBlocks = [] 
-    }
-}
-
 export class GameData {
+    colIndex: number
     rowIndex: number
-    gameRowData: GameRowData[]
+    gameBlockArrays: GameBlockData[][]
 
     constructor() {
+        this.colIndex = 0
         this.rowIndex = 0
-        this.gameRowData = []
-    }
-
-    getCurrentRowData(): GameRowData {
-        return this.gameRowData[this.rowIndex]
+        this.gameBlockArrays = []
     }
 
     charsSoFar(): string {
-        let accumulate = ""
-        this.gameRowData[this.rowIndex].gameBlocks.forEach(gameBlock => {
-            accumulate += gameBlock.char
+        let accumulator = ""
+        const currentRow = this.gameBlockArrays[this.rowIndex]
+        currentRow.forEach(gameBlock => {
+            accumulator += gameBlock.char
         })
-        return accumulate
+        return accumulator
     }
 }
 
@@ -60,7 +52,7 @@ export enum GAME_STATUS {
     NOT_IN_WORDLIST
 }
 
-export class GameOperationData {
+export class GameOperationResult {
     status: GAME_STATUS
     gameData: GameData
 
@@ -71,33 +63,51 @@ export class GameOperationData {
 }
 
 export class GameLogic {
+    // 'GameData' has an array of 'GameRowData'
+    // Each 'GameRowData' has an array of 'GameBlockData'
+    // Each 'GameBlockData' has a 'char' and a 'charState'
     public static createGameData(numRows: number, numCols: number): GameData {
         const gameData = new GameData()
         for (let row = 0; row < numRows; row++) {
-            const gameRow = new GameRowData()
+            const rowOfGameBlocks: GameBlockData[] = []
             for (let col = 0; col < numCols; col++) {
-                const gameBlock = new GameBlockData()
-                gameBlock.state = CHAR_STATE.NIL
-                gameRow.gameBlocks.push(gameBlock)
+                rowOfGameBlocks.push(new GameBlockData()) 
             }
-            gameData.gameRowData.push(gameRow)
+            gameData.gameBlockArrays.push(rowOfGameBlocks)
         }
         return gameData
     }
 
-    public static handlePlayerInput(gameData: GameData, key: string): GameOperationData {
+    public static handlePlayerInput(gameData: GameData, key: string): GameOperationResult {
         const charsSoFar = gameData.charsSoFar()
 
+        if (key === 'Enter') {
+            return this.onEnterInput(gameData)
+        }
+        if (key === 'Backspace' || key === 'Delete') {
+            return this.onDeleteInput(gameData)
+        }
+
         const isAlphabetChar = /^[a-zA-Z]$/.test(key)
+        if (isAlphabetChar) {
+            return this.onAlphabetInput(gameData, key)
+        }
+
+        return new GameOperationResult(GAME_STATUS.SUCCESS, gameData)
     }
 
-    private static onAlphabetInput(key: string): GameOperationData {
-
+    private static onAlphabetInput(gameData: GameData, key: string): GameOperationResult {
+        // if (charsSoFar.length < WORD_LENGTH) {
+        //     const rowLength = gameData.gameBlocks[gameData.rowIndex].length
+        // }
+        return new GameOperationResult(GAME_STATUS.SUCCESS, gameData)
     }
 
-    private static onDeleteInput(): GameOperationData {
+    private static onDeleteInput(gameData: GameData): GameOperationResult {
+        return new GameOperationResult(GAME_STATUS.SUCCESS, gameData)
     }
 
-    private static onEnterInput(): GameOperationData {
+    private static onEnterInput(gameData: GameData): GameOperationResult {
+        return new GameOperationResult(GAME_STATUS.SUCCESS, gameData)
     }
 }
