@@ -31,8 +31,17 @@ const App: React.FC = () => {
    useInputHandler((evt: KeyboardEvent) => {
       evt.preventDefault()
       const opResult = GameLogic.handlePlayerInput(m_gameData, evt.key)
-      if (opResult.status === GAME_OP_STATUS.SUCCESS) {
-         setGameData(opResult.gameData)
+      setGameData(opResult.gameData)
+
+      switch (opResult.status) {
+         case GAME_OP_STATUS.OP_SUCCESS:
+            break
+         case GAME_OP_STATUS.WIN:
+            console.log("Winner chicken dinner")
+            break
+         case GAME_OP_STATUS.LOSE:
+            console.log("Losers weepers")
+            break
       }
    })
 

@@ -39,8 +39,8 @@ export class GameData {
 }
 
 export enum GAME_OP_STATUS {
-    SUCCESS,
-    FAIL,
+    WIN, LOSE,
+    OP_SUCCESS,
     NOT_ENOUGH_LETTERS,
     NOT_IN_WORDLIST
 }
@@ -94,7 +94,7 @@ export class GameLogic {
         if (isAlphabetChar) {
             return this.onAlphabetInput(gameData, lowercaseKey)
         }
-        return new GameOperationResult(GAME_OP_STATUS.SUCCESS, { ...gameData } as GameData)
+        return new GameOperationResult(GAME_OP_STATUS.OP_SUCCESS, { ...gameData } as GameData)
     }
 
     private static onAlphabetInput(gameData: GameData, key: string): GameOperationResult {
@@ -103,7 +103,7 @@ export class GameLogic {
             gameBlockArray[gameData.colIndex].char = key
             gameData.colIndex++
         }
-        return new GameOperationResult(GAME_OP_STATUS.SUCCESS, { ...gameData } as GameData)
+        return new GameOperationResult(GAME_OP_STATUS.OP_SUCCESS, { ...gameData } as GameData)
     }
 
     private static onDeleteInput(gameData: GameData): GameOperationResult {
@@ -112,13 +112,12 @@ export class GameLogic {
             gameData.colIndex--
             gameBlockArray[gameData.colIndex].char = ""
         }
-        return new GameOperationResult(GAME_OP_STATUS.SUCCESS, { ...gameData } as GameData)
+        return new GameOperationResult(GAME_OP_STATUS.OP_SUCCESS, { ...gameData } as GameData)
     }
 
     private static onEnterInput(gameData: GameData): GameOperationResult {
         const gameBlockArray = gameData.gameBlockArrays[gameData.rowIndex]
         const rowLength = gameBlockArray.length
-        const numRows = gameData.gameBlockArrays.length
 
         if (gameData.colIndex < rowLength) {
             return new GameOperationResult(GAME_OP_STATUS.NOT_ENOUGH_LETTERS, { ...gameData } as GameData)
@@ -138,8 +137,29 @@ export class GameLogic {
                 gameBlock.state = CHAR_STATE.WRONG
             }
         })
+
+        const rowString = this.gameBlockArrayString(gameBlockArray).toLowerCase()
+        const guessIsCorrect = (rowString === gameData.wordOfTheDay)
+        if (guessIsCorrect) {
+            return new GameOperationResult(GAME_OP_STATUS.WIN, {...gameData} as GameData)
+        }
+
+        const numRows = gameData.gameBlockArrays.length
+        const onLastRow = gameData.rowIndex >= numRows - 1
+        if (onLastRow && !guessIsCorrect) {
+            return new GameOperationResult(GAME_OP_STATUS.LOSE, { ...gameData } as GameData)
+        }
+
         gameData.colIndex = 0
         gameData.rowIndex++
-        return new GameOperationResult(GAME_OP_STATUS.SUCCESS, { ...gameData } as GameData)
+        return new GameOperationResult(GAME_OP_STATUS.OP_SUCCESS, { ...gameData } as GameData)
+    }
+
+    private static gameBlockArrayString(gameBlockArray: GameBlockData[]): string {
+        let accumulator = ""
+        gameBlockArray.forEach(gameBlock => {
+            accumulator += gameBlock.char
+        })
+        return accumulator
     }
 }
