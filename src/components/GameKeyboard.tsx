@@ -1,5 +1,6 @@
 import React from 'react'
 import { CHAR_STATE } from '../game/GameLogicHandler'
+import { GameContext } from '../App'
 
 const GAP_BETWEEN_KEYS = "0.4rem"
 
@@ -50,19 +51,8 @@ const getKeyCSS = (eventKey: string, keyCharState: CHAR_STATE): React.CSSPropert
          css.background = "gray"
          break
    }
-   if (keyCharState !== CHAR_STATE.NIL) {
-      console.log("Key State Char: ", keyCharState)
-   }
    return css
 }
-
-// const getDisplayChar = (eventKey: string) => {
-//    if (eventKey === 'Enter') return 'Enter'
-//    if (eventKey === 'Delete' || eventKey === 'Backspace') {
-//       return 'X'
-//    }
-//    return eventKey.toUpperCase()
-// }
 
 const getEventKeys = (): string[][] => {
    return [
@@ -73,6 +63,8 @@ const getEventKeys = (): string[][] => {
 }
 
 const GameKeyboard: React.FC<GameKeyboardProps> = props => {
+   const gameCtx = React.useContext(GameContext)
+
    return (
       <div style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", width: "full", gap: GAP_BETWEEN_KEYS }}>
@@ -82,7 +74,10 @@ const GameKeyboard: React.FC<GameKeyboardProps> = props => {
                      <div style={getKeyboardRowCSS()}>
                         {rowOfEventKeys.map(eventKey => {
                            return (
-                              <button style={getKeyCSS(eventKey, props.keyData.get(eventKey) || CHAR_STATE.NIL)}>
+                              <button 
+                                 style={getKeyCSS(eventKey, props.keyData.get(eventKey) || CHAR_STATE.NIL)}
+                                 onClick={() => gameCtx?.keypressHandler(eventKey)}
+                              >
                                  {eventKey.toUpperCase()}
                               </button>
                            )

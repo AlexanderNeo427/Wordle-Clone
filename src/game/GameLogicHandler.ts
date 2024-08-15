@@ -74,6 +74,7 @@ export class GameLogic {
         }
         return keyData
     }
+
     // 'GameData' has an array of 'GameRowData'
     // Each 'GameRowData' has an array of 'GameBlockData'
     // Each 'GameBlockData' has a 'char' and a 'charState'
