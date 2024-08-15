@@ -1,88 +1,96 @@
 import React from 'react'
-import { KEY_STATE } from '../App'
+import { CHAR_STATE } from '../game/GameLogicHandler'
+
+const GAP_BETWEEN_KEYS = "0.4rem"
 
 interface GameKeyboardProps {
-   keyData: Map<string, KEY_STATE>
+   // string 1 - eventKey
+   // string 2 - CHAR_STATE of the corresponding key 
+   keyData: Map<string, CHAR_STATE> 
 }
 
 const getKeyboardRowCSS = (): React.CSSProperties => {
    const css: React.CSSProperties = {}
-
+   css.display = "flex"
+   css.gap = GAP_BETWEEN_KEYS
    return css
 }
 
-const getKeyCSS = (keyState: KEY_STATE): React.CSSProperties => {
+const getKeyCSS = (eventKey: string, keyCharState: CHAR_STATE): React.CSSProperties => {
    const css: React.CSSProperties = {}
-   css.width = "40px"
-   css.maxWidth = "60px"
-   css.height = "50px"
+   css.minWidth = "2.8rem"
+   css.minHeight = "4rem"
 
-   switch (keyState) {
-      case KEY_STATE.CORRECT:
+   css.background = "lightgray"
+   css.borderRadius = "0.5rem"
+   css.outlineWidth = "0"
+   css.fontWeight = "bold"
+   css.border = "none"
+
+   if (eventKey === 'Enter' || eventKey === 'Delete') {
+      css.fontSize = "0.85rem"
+      css.paddingLeft = "0.5rem"
+      css.paddingRight = "0.5rem"
+   }
+   else {
+      css.fontSize = "1.4rem"
+   }
+
+   switch (keyCharState) {
+      case CHAR_STATE.CORRECT:
+         css.color = "white"
          css.background = "green"
          break
-      case KEY_STATE.EXISTS:
+      case CHAR_STATE.HALF_CORRECT:
+         css.color = "white"
          css.background = "yellow"
          break
-      case KEY_STATE.WRONG:
+      case CHAR_STATE.WRONG:
+         css.color = "white"
          css.background = "gray"
          break
-      case KEY_STATE.UNKNOWN: break
+   }
+   if (keyCharState !== CHAR_STATE.NIL) {
+      console.log("Key State Char: ", keyCharState)
    }
    return css
 }
 
-// string 1 - Key Code
-// string 2 - String to display
-// const getRow1 = (): Map<string, string> => {
-
+// const getDisplayChar = (eventKey: string) => {
+//    if (eventKey === 'Enter') return 'Enter'
+//    if (eventKey === 'Delete' || eventKey === 'Backspace') {
+//       return 'X'
+//    }
+//    return eventKey.toUpperCase()
 // }
+
+const getEventKeys = (): string[][] => {
+   return [
+      ['q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p'],
+      ['a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l'],
+      ['Enter', 'z', 'x', 'c', 'v', 'b', 'n', 'm', 'Delete']
+   ]
+}
 
 const GameKeyboard: React.FC<GameKeyboardProps> = props => {
    return (
-      <div style={{ display: "flex", justifyContent: "center", alignItems: "center", margin: "1rem" }}>
-         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", width: "full", }}>
-            {/* ---- KEYBOARD ROW 1 ----- */}
-            <div style={getKeyboardRowCSS()}>
-               {
-                  ['Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P'].map(chr => {
-                     const lowercase = chr.toLowerCase()
-                     const keyState = props.keyData.get(lowercase) || KEY_STATE.UNKNOWN
-                     const keyCSS = getKeyCSS(keyState)
-                     return (
-                        <button style={keyCSS}>{chr}</button>
-                     )
-                  })
-               }
-            </div>
-
-            {/* ---- KEYBOARD ROW 2 ----- */}
-            <div style={getKeyboardRowCSS()}>
-               {
-                  ['A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L'].map(chr => {
-                     const lowercase = chr.toLowerCase()
-                     const keyState = props.keyData.get(lowercase) || KEY_STATE.UNKNOWN
-                     const keyCSS = getKeyCSS(keyState)
-                     return (
-                        <button style={keyCSS}>{chr}</button>
-                     )
-                  })
-               }
-            </div>
-
-            {/* ---- KEYBOARD ROW 3 ----- */}
-            <div style={getKeyboardRowCSS()}>
-               {
-                  ['ENTER', 'Z', 'X', 'C', 'V', 'B', 'N', 'M', 'DEL'].map(chr => {
-                     const lowercase = chr.toLowerCase()
-                     const keyState = props.keyData.get(lowercase) || KEY_STATE.UNKNOWN
-                     const keyCSS = getKeyCSS(keyState)
-                     return (
-                        <button style={keyCSS}>{chr}</button>
-                     )
-                  })
-               }
-            </div>
+      <div style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
+         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", width: "full", gap: GAP_BETWEEN_KEYS }}>
+            {
+               getEventKeys().map(rowOfEventKeys => {
+                  return (
+                     <div style={getKeyboardRowCSS()}>
+                        {rowOfEventKeys.map(eventKey => {
+                           return (
+                              <button style={getKeyCSS(eventKey, props.keyData.get(eventKey) || CHAR_STATE.NIL)}>
+                                 {eventKey.toUpperCase()}
+                              </button>
+                           )
+                        })}
+                     </div>
+                  )
+               })
+            }
          </div>
       </div>
    )

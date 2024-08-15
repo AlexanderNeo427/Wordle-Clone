@@ -9,23 +9,26 @@ const getGridBlockStyles = (char: string, charState: CHAR_STATE): React.CSSPrope
    const css: React.CSSProperties = {}
    css.width = "60px"
    css.height = "60px"
-   css.outline = "2px solid lightgray"
    css.textAlign = "center"
    css.fontSize = "3rem"
    switch (charState) {
       case CHAR_STATE.NIL: 
-         if (char.length > 0) {
-            css.outline = "2px solid gray"
-         }
+         css.outline = char.length > 0 ? "2px solid gray" : "2px solid lightgray"
          break
       case CHAR_STATE.CORRECT: 
          css.background = 'green'
+         css.outline = '2px solid green'
+         css.color = 'white'
          break
       case CHAR_STATE.HALF_CORRECT:
          css.background = 'yellow'
+         css.outline = '2px solid yellow'
+         css.color = 'white'
          break
       case CHAR_STATE.WRONG:
          css.background = 'gray'
+         css.outline = '2px solid gray'
+         css.color = 'white'
          break
    }
    return css

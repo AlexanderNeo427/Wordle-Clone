@@ -8,10 +8,10 @@ export const randIntRange = (min: number, max: number): number => {
 }
 
 export enum CHAR_STATE {
-    CORRECT, // Correct letter - Correct position
-    HALF_CORRECT, // Correct letter - Wrong position
-    WRONG, // Self-explanatory
-    NIL, // NIL state for...reasons
+    NIL = 0, // NIL state for...reasons
+    WRONG = 1, // Self-explanatory
+    HALF_CORRECT = 2, // Correct letter - Wrong position
+    CORRECT = 3, // Correct letter - Correct position
 }
 
 export class GameBlockData {
@@ -48,22 +48,32 @@ export enum GAME_OP_STATUS {
 export class GameOperationResult {
     status: GAME_OP_STATUS
     gameData: GameData
+    keyData: Map<string, CHAR_STATE>
 
-    constructor(status: GAME_OP_STATUS, gameData: GameData) {
+    constructor(status: GAME_OP_STATUS, gameData: GameData, keyData: Map<string, CHAR_STATE>) {
         this.status = status
         this.gameData = gameData
+        this.keyData = keyData
     }
 }
 
 // TODO: Load from wordlist yadayada
 export const loadRandomWord = (): string => {
     const wordlist: string[] = [
-        "argue", "arise", "audio", "cow", "block", "blooood", "shat", "fart", "supercalifrag"
+        "argue", "arise", "audio", "cow", "block", "blooood", "shart", "fart", "supercalifrag"
     ]
     return wordlist[randIntRange(0, wordlist.length - 1)]
 }
 
 export class GameLogic {
+    public static initializeKeyData(): Map<string, CHAR_STATE> {
+        const keyData = new Map<string, CHAR_STATE>()
+        for (let i = 97; i <= 122; i++) {
+            const chr = String.fromCharCode(i)
+            keyData.set(chr, CHAR_STATE.NIL)
+        }
+        return keyData
+    }
     // 'GameData' has an array of 'GameRowData'
     // Each 'GameRowData' has an array of 'GameBlockData'
     // Each 'GameBlockData' has a 'char' and a 'charState'
@@ -81,47 +91,58 @@ export class GameLogic {
         return gameData
     }
 
-    public static handlePlayerInput(gameData: GameData, lowercaseKey: string): GameOperationResult {
-        console.log("Handle Player Input: ", lowercaseKey)
+    public static handlePlayerInput(lowercaseKey: string, gameData: GameData, keyData: Map<string, CHAR_STATE>): GameOperationResult {
         if (lowercaseKey === 'Enter') {
-            return this.onEnterInput(gameData)
+            return this.onEnterInput(gameData, keyData)
         }
         if (lowercaseKey === 'Backspace' || lowercaseKey === 'Delete') {
-            return this.onDeleteInput(gameData)
+            return this.onDeleteInput(gameData, keyData)
         }
 
         const isAlphabetChar = /^[a-zA-Z]$/.test(lowercaseKey)
         if (isAlphabetChar) {
-            return this.onAlphabetInput(gameData, lowercaseKey)
+            return this.onAlphabetInput(gameData, lowercaseKey, keyData)
         }
-        return new GameOperationResult(GAME_OP_STATUS.OP_SUCCESS, { ...gameData } as GameData)
+        return new GameOperationResult(GAME_OP_STATUS.OP_SUCCESS, { ...gameData } as GameData, keyData)
     }
 
-    private static onAlphabetInput(gameData: GameData, key: string): GameOperationResult {
+    private static onAlphabetInput(gameData: GameData, key: string, keyData: Map<string, CHAR_STATE>): GameOperationResult {
         const gameBlockArray = gameData.gameBlockArrays[gameData.rowIndex]
         if (gameData.colIndex < gameBlockArray.length) {
             gameBlockArray[gameData.colIndex].char = key
             gameData.colIndex++
         }
-        return new GameOperationResult(GAME_OP_STATUS.OP_SUCCESS, { ...gameData } as GameData)
+        return new GameOperationResult(
+            GAME_OP_STATUS.OP_SUCCESS,
+            { ...gameData } as GameData,
+            new Map(keyData)
+        )
     }
 
-    private static onDeleteInput(gameData: GameData): GameOperationResult {
+    private static onDeleteInput(gameData: GameData, keyData: Map<string, CHAR_STATE>): GameOperationResult {
         const gameBlockArray = gameData.gameBlockArrays[gameData.rowIndex]
         if (gameData.colIndex > 0) {
             gameData.colIndex--
             gameBlockArray[gameData.colIndex].char = ""
         }
-        return new GameOperationResult(GAME_OP_STATUS.OP_SUCCESS, { ...gameData } as GameData)
+        return new GameOperationResult(
+            GAME_OP_STATUS.OP_SUCCESS, 
+            { ...gameData } as GameData, 
+            new Map(keyData)
+        )
     }
 
-    private static onEnterInput(gameData: GameData): GameOperationResult {
+    private static onEnterInput(gameData: GameData, keyData: Map<string, CHAR_STATE>): GameOperationResult {
         const gameBlockArray = gameData.gameBlockArrays[gameData.rowIndex]
         const rowLength = gameBlockArray.length
 
         if (gameData.colIndex < rowLength) {
-            return new GameOperationResult(GAME_OP_STATUS.NOT_ENOUGH_LETTERS, { ...gameData } as GameData)
-        } 
+            return new GameOperationResult(
+                GAME_OP_STATUS.NOT_ENOUGH_LETTERS, 
+                { ...gameData } as GameData, 
+                new Map(keyData)
+            )
+        }
 
         gameBlockArray.forEach((gameBlock, idx) => {
             const correctChar = gameData.wordOfTheDay[idx]
@@ -136,23 +157,40 @@ export class GameLogic {
             else {
                 gameBlock.state = CHAR_STATE.WRONG
             }
+
+            const desiredCharState = gameBlock.state
+            const currentCharState = keyData.get(currentChar) || CHAR_STATE.NIL
+            const finalCharState: CHAR_STATE = Math.max(desiredCharState, currentCharState)
+            keyData.set(currentChar, finalCharState)
         })
 
         const rowString = this.gameBlockArrayString(gameBlockArray).toLowerCase()
         const guessIsCorrect = (rowString === gameData.wordOfTheDay)
         if (guessIsCorrect) {
-            return new GameOperationResult(GAME_OP_STATUS.WIN, {...gameData} as GameData)
+            return new GameOperationResult(
+                GAME_OP_STATUS.WIN,
+                { ...gameData } as GameData, 
+                new Map(keyData)
+            )
         }
 
         const numRows = gameData.gameBlockArrays.length
         const onLastRow = gameData.rowIndex >= numRows - 1
         if (onLastRow && !guessIsCorrect) {
-            return new GameOperationResult(GAME_OP_STATUS.LOSE, { ...gameData } as GameData)
+            return new GameOperationResult(
+                GAME_OP_STATUS.LOSE, 
+                { ...gameData } as GameData,
+                new Map(keyData) 
+            )
         }
 
         gameData.colIndex = 0
         gameData.rowIndex++
-        return new GameOperationResult(GAME_OP_STATUS.OP_SUCCESS, { ...gameData } as GameData)
+        return new GameOperationResult(
+            GAME_OP_STATUS.OP_SUCCESS, 
+            { ...gameData } as GameData,
+            new Map(keyData) 
+        )
     }
 
     private static gameBlockArrayString(gameBlockArray: GameBlockData[]): string {

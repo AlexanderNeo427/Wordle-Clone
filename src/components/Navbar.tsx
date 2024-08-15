@@ -1,16 +1,27 @@
 import React from 'react'
 import './Navbar.css'
 
-const Navbar: React.FC = props => {
+const Navbar: React.FC = () => {
    return (
       <nav className='navbar'> 
          <span className="material-symbols-outlined navbar-btn">menu</span>
-         <div style={{ display: "flex" }}>
+         <div style={{ display: "flex", alignItems: "center" }}>
             <span className="material-symbols-outlined navbar-btn">lightbulb</span>
             <span className="material-symbols-outlined navbar-btn">bar_chart</span>
             <span className="material-symbols-outlined navbar-btn">help</span>
             <span className="material-symbols-outlined navbar-btn">settings</span>
-            <button>Subscribe to Games</button>
+            <button style={{ 
+               borderRadius: "50px", 
+               border: "none",
+               outline: "2px solid black",
+               boxShadow: "0px 0px",
+               background: "none",
+               paddingLeft: "2rem", paddingRight: "2rem",
+               fontSize: "1rem",
+               height: '78%'
+            }}>
+               <strong>Subscribe to Games</strong>
+            </button>
          </div>
       </nav>
    )
