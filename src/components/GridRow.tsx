@@ -38,9 +38,9 @@ const GridRow: React.FC<GridRowProps> = props => {
    return (
       <div style={{ display: "flex", gap: "12px" }}>
          {
-            props.gameBlockArray.map(gameBlock => {
+            props.gameBlockArray.map((gameBlock, idx) => {
                return (
-                  <div style={getGridBlockStyles(gameBlock.char, gameBlock.state)}>
+                  <div key={idx} style={getGridBlockStyles(gameBlock.char, gameBlock.state)}>
                      {gameBlock.char}
                   </div>
                )

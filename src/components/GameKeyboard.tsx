@@ -69,14 +69,18 @@ const GameKeyboard: React.FC<GameKeyboardProps> = props => {
       <div style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", width: "full", gap: GAP_BETWEEN_KEYS }}>
             {
-               getEventKeys().map(rowOfEventKeys => {
+               getEventKeys().map((rowOfEventKeys, rowIdx) => {
                   return (
-                     <div style={getKeyboardRowCSS()}>
-                        {rowOfEventKeys.map(eventKey => {
+                     <div key={rowIdx} style={getKeyboardRowCSS()}>
+                        {rowOfEventKeys.map((eventKey, keyIdx) => {
                            return (
                               <button 
+                                 key={keyIdx}
                                  style={getKeyCSS(eventKey, props.keyData.get(eventKey) || CHAR_STATE.NIL)}
-                                 onClick={() => gameCtx?.keypressHandler(eventKey)}
+                                 onClick={() => {
+                                    console.log("Event Key: ", eventKey)
+                                    gameCtx?.keypressHandler(eventKey)
+                                 }}
                               >
                                  {eventKey.toUpperCase()}
                               </button>

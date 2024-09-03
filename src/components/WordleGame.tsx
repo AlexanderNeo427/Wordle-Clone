@@ -11,9 +11,9 @@ const WordleGame: React.FC<WordleGameProps> = props => {
       <div style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
          <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}> 
             {
-               props.gameData.gameBlockArrays.map(arrayOfGameBlocks => { 
+               props.gameData.gameBlockArrays.map((arrayOfGameBlocks, idx) => { 
                   return (
-                     <GridRow gameBlockArray={arrayOfGameBlocks}/> 
+                     <GridRow key={idx} gameBlockArray={arrayOfGameBlocks}/> 
                   )
                })
             }

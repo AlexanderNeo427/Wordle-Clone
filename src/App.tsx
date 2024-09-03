@@ -2,7 +2,7 @@ import React from 'react'
 import useInputHandler from './hooks/useInputHandler'
 import Navbar from './components/Navbar'
 import WordleGame from './components/WordleGame'
-import { CHAR_STATE, GAME_OP_STATUS, GameData, GameLogic, loadRandomWord } from './game/GameLogicHandler'
+import { CHAR_STATE, GAME_OP_STATUS, GameData, GameLogic, GameOperationResult, loadRandomWord } from './game/GameLogicHandler'
 import GameKeyboard from './components/GameKeyboard'
 
 export interface GameContextType {
@@ -18,7 +18,7 @@ const App: React.FC = () => {
    const [m_gameContext, setGameContext] = React.useState<GameContextType>()
 
    const onKeyPress = (eventKey: string): void => {
-      const opResult = GameLogic.handlePlayerInput(eventKey, m_gameData, m_keyData)
+      const opResult: GameOperationResult = GameLogic.handlePlayerInput(eventKey, m_gameData, m_keyData)
       setGameData(opResult.gameData)
       setKeyData(opResult.keyData)
 
@@ -44,6 +44,10 @@ const App: React.FC = () => {
 
       console.log("Word of the day: ", wordOfTheDay)
    }, [])
+
+   React.useEffect(() => {
+      setGameContext({ keypressHandler: onKeyPress })
+   }, [m_gameData])
 
    useInputHandler((evt: KeyboardEvent) => {
       evt.preventDefault()
