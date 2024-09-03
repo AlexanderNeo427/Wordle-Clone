@@ -6,6 +6,8 @@ import { CHAR_STATE, GAME_OP_STATUS, GameData, GameLogic, GameOperationResult, l
 import GameKeyboard from './components/GameKeyboard'
 
 export interface GameContextType {
+   rowIndex: number
+   colIndex: number
    keypressHandler: (eventKey: string) => void
 }
 
@@ -40,13 +42,21 @@ const App: React.FC = () => {
       setGameData(gameData)
       setKeyData(GameLogic.initializeKeyData())
 
-      setGameContext({ keypressHandler: onKeyPress })
+      setGameContext({ 
+         rowIndex: gameData.rowIndex, 
+         colIndex: gameData.colIndex,
+         keypressHandler: onKeyPress 
+      })
 
       console.log("Word of the day: ", wordOfTheDay)
    }, [])
 
    React.useEffect(() => {
-      setGameContext({ keypressHandler: onKeyPress })
+      setGameContext({
+         rowIndex: m_gameData.rowIndex,
+         colIndex: m_gameData.colIndex,
+         keypressHandler: onKeyPress
+      })
    }, [m_gameData])
 
    useInputHandler((evt: KeyboardEvent) => {

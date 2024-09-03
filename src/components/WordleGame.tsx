@@ -13,7 +13,7 @@ const WordleGame: React.FC<WordleGameProps> = props => {
             {
                props.gameData.gameBlockArrays.map((arrayOfGameBlocks, idx) => { 
                   return (
-                     <GridRow key={idx} gameBlockArray={arrayOfGameBlocks}/> 
+                     <GridRow key={idx} rowIdx={idx} gameBlockArray={arrayOfGameBlocks}/> 
                   )
                })
             }

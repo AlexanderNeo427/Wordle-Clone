@@ -1,6 +1,7 @@
 import React from 'react'
 import { CHAR_STATE } from '../game/GameLogicHandler'
 import { GameContext } from '../App'
+import { AppColors } from '../globals'
 
 const GAP_BETWEEN_KEYS = "0.4rem"
 
@@ -40,15 +41,15 @@ const getKeyCSS = (eventKey: string, keyCharState: CHAR_STATE): React.CSSPropert
    switch (keyCharState) {
       case CHAR_STATE.CORRECT:
          css.color = "white"
-         css.background = "green"
+         css.background = AppColors.GREEN
          break
       case CHAR_STATE.HALF_CORRECT:
          css.color = "white"
-         css.background = "yellow"
+         css.background = AppColors.YELLOW
          break
       case CHAR_STATE.WRONG:
          css.color = "white"
-         css.background = "gray"
+         css.background = AppColors.GRAY
          break
    }
    return css

@@ -1,0 +1,15 @@
+@keyframes scale_bounce_keyframe {
+   0% {
+      scale: 1;
+   }
+   50% {
+      scale: 1.1;
+   }
+   100% {
+      scale: 1;
+   }
+}
+
+.scale-bounce-anim {
+   animation: scale_bounce_keyframe 0.1s linear;
+}
