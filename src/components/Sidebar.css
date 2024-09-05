@@ -1,0 +1,21 @@
+.sidebar {
+   position: absolute;
+   top: 0;
+   left: 0;
+   bottom: 0; 
+   background: white;
+   outline: 2px solid black;
+   transition: width 1s;
+}
+
+.selectable {
+   padding-left: 1rem;
+   padding-top: 0.3rem;
+   padding-bottom: 0.3rem;
+}
+
+.selectable:hover {
+   background: lightgray;
+   cursor: pointer;
+}
+
