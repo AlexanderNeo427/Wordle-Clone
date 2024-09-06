@@ -2,62 +2,75 @@ import React from 'react'
 import useInputHandler from './hooks/useInputHandler'
 import Navbar from './components/Navbar'
 import WordleGame from './components/WordleGame'
-import { CHAR_STATE, GAME_OP_STATUS, GameData, GameLogic, GameOperationResult, loadRandomWord } from './game/GameLogicHandler'
+import { AppAction, CHAR_STATE, GAME_OP_STATUS, GameLogic, GridRowAction, InputAction, loadRandomWord, CompleteWordAction } from './game/GameLogicHandler'
 import GameKeyboard from './components/GameKeyboard'
+import Sidebar from './components/Sidebar'
+
+const NUM_ROWS = 5
 
 export interface GameContextType {
-   rowIndex: number
-   colIndex: number
-   keypressHandler: (eventKey: string) => void
+   wordOfTheDay: () => string
+
+   gridRowActionQueueSetters: Map<
+      number, // Row index
+      React.Dispatch<React.SetStateAction<GridRowAction[]>>
+   >
+   appActionQueueSetter: React.Dispatch<React.SetStateAction<AppAction[]>>
 }
 
 export const GameContext = React.createContext<GameContextType | undefined>(undefined)
 
 const App: React.FC = () => {
    // Used for rendering the in-game keyboard
+   const [m_rowIndex, setRowIndex] = React.useState<number>(0)
    const [m_keyData, setKeyData] = React.useState<Map<string, CHAR_STATE>>(new Map())
-   const [m_gameData, setGameData] = React.useState<GameData>(new GameData())
-   const [m_gameContext, setGameContext] = React.useState<GameContextType>()
+   const [m_appActionQueue, setActionQueue] = React.useState<AppAction[]>([])
+   const [m_gameContext, setGameContext] = React.useState<GameContextType>({
+      wordOfTheDay: () => "",
+      gridRowActionQueueSetters: new Map(),
+      appActionQueueSetter: setActionQueue
+   })
 
-   const onKeyPress = (eventKey: string): void => {
-      const opResult: GameOperationResult = GameLogic.handlePlayerInput(eventKey, m_gameData, m_keyData)
-      setGameData(opResult.gameData)
-      setKeyData(opResult.keyData)
-
-      switch (opResult.status) {
-         case GAME_OP_STATUS.OP_SUCCESS:
-            break
-         case GAME_OP_STATUS.WIN:
-            console.log("Winner chicken dinner")
-            break
-         case GAME_OP_STATUS.LOSE:
-            console.log("Losers weepers")
-            break
-      }
-   }
-
+   // Initialize game
    React.useEffect(() => {
       const wordOfTheDay = loadRandomWord()
-      const gameData = GameLogic.createGameData(wordOfTheDay, 7)
-      setGameData(gameData)
+      setGameContext(oldGameCtx => {
+         return {
+            ...oldGameCtx,
+            wordOfTheDay: () => wordOfTheDay
+         } as GameContextType
+      })
       setKeyData(GameLogic.initializeKeyData())
 
-      setGameContext({ 
-         rowIndex: gameData.rowIndex, 
-         colIndex: gameData.colIndex,
-         keypressHandler: onKeyPress 
-      })
-
-      console.log("Word of the day: ", wordOfTheDay)
+      console.log("App | Word of the day: ", wordOfTheDay)
    }, [])
 
-   React.useEffect(() => {
-      setGameContext({
-         rowIndex: m_gameData.rowIndex,
-         colIndex: m_gameData.colIndex,
-         keypressHandler: onKeyPress
+   // Enqueue inputAction to the appropriate gridRow's actionQueue
+   const onKeyPress = (eventKey: string): void => {
+      const gridrowActionQueueSetter = m_gameContext.gridRowActionQueueSetters.get(m_rowIndex)
+      if (!gridrowActionQueueSetter) {
+         return
+      }
+      gridrowActionQueueSetter(oldActionQueue => {
+         return [...oldActionQueue, new InputAction(eventKey)]
       })
-   }, [m_gameData])
+      // console.log("App.tsx | onKeyPress - Finished")
+   }
+
+   // Handle any pending actions in the 'AppActionQueue'
+   React.useEffect(() => {
+      while (m_appActionQueue.length > 0) {
+         const appAction = m_appActionQueue.shift() as AppAction
+         if (appAction == null) {
+            return
+         }
+         
+         // TODO: Handle app action
+         if (appAction as CompleteWordAction) {
+            setRowIndex(prevRow => prevRow + 1)
+         }
+      }
+   }, [m_appActionQueue])
 
    useInputHandler((evt: KeyboardEvent) => {
       evt.preventDefault()
@@ -67,8 +80,9 @@ const App: React.FC = () => {
    return (
       <GameContext.Provider value={m_gameContext}>
          <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+            {/* <Sidebar /> */}
             <Navbar />
-            <WordleGame gameData={m_gameData} />
+            <WordleGame />
             <GameKeyboard keyData={m_keyData} />
          </div>
       </GameContext.Provider>

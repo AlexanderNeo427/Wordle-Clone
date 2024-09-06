@@ -1,26 +1,22 @@
 import React from 'react'
-import { GameData } from '../game/GameLogicHandler'
 import GridRow from './GridRow'
-import Sidebar from './Sidebar'
+import { NUM_ROWS } from '../game/GameLogicHandler'
 
 interface WordleGameProps {
-   gameData: GameData
 }
 
-const WordleGame: React.FC<WordleGameProps> = props => {
+const WordleGame: React.FC<WordleGameProps> = () => {
    return (
       <div style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
-         <Sidebar />
-         <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}> 
-            {
-               props.gameData.gameBlockArrays.map((arrayOfGameBlocks, idx) => { 
-                  return (
-                     <GridRow key={idx} rowIdx={idx} gameBlockArray={arrayOfGameBlocks}/> 
-                  )
-               })
-            }
-         </div>
-
+         <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}> {
+            (() => {
+               const gridRows: JSX.Element[] = []
+               for (let i = 0; i < NUM_ROWS; i++) {
+                  gridRows.push(<GridRow key={i} rowIdx={i} />)
+               }
+               return gridRows
+            })()
+         }</div>
       </div>
    )
 }
