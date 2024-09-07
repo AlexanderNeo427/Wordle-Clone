@@ -61,19 +61,6 @@ const GridRow: React.FC<GridRowProps> = props => {
          if (action as InputAction) {
             const inputAction = action as InputAction
             if (inputAction.eventKey === "Backspace" || inputAction.eventKey === "Delete") {
-               // setAllBlockData(oldAllBlockData => {
-               //    if (m_colIdx <= 0) {
-               //       return [...oldAllBlockData]
-               //    }
-               //    const newBlockData = [...oldAllBlockData]
-               //    setColIdx(idx => idx - 1)
-               // 
-               //    // Have to manually input '-1' because m_colIdx isn't updated yet
-               //    // More of React bullshitteru
-               //    newBlockData[m_colIdx - 1].letter = ""                   
-               //    return newBlockData
-               // })
-
                setWord(oldWord => oldWord.substring(0, oldWord.length - 1))
             }
             else if (inputAction.eventKey === "Enter") {
@@ -86,6 +73,7 @@ const GridRow: React.FC<GridRowProps> = props => {
                // const keyData = new Map<string, CHAR_STATE>()
                // m_word.split("").forEach(ch => {
                // })
+               
 
                gameCtx.appActionQueueSetter(oldAppActionQueue => {
                   return [...oldAppActionQueue, new CompleteWordAction(new Map())]
@@ -117,16 +105,27 @@ const GridRow: React.FC<GridRowProps> = props => {
 
    return (
       <div style={{ display: "flex", gap: "12px" }}>{
-         m_word.padEnd(gameCtx.wordOfTheDay().length, " ").split("").map((_, idx) => {
-            return (
-               <GridBlock 
-                  key={idx} 
-                  idx={idx} 
-                  word={m_word}
-                  gridLength={gameCtx.wordOfTheDay().length}
-               />
-            )
-         })
+         ((): JSX.Element[] => {
+            const elems: JSX.Element[] = []
+
+            const wordPadded: string = m_word.padEnd(gameCtx.wordOfTheDay().length, " ")
+            const charArr: string[] = wordPadded.split("")
+
+            charArr.forEach((_, idx: number) => {
+               elems.push(<GridBlock key={idx} idx={idx} charArr={charArr}/>)
+            })
+            return elems 
+         })()
+         // m_word.padEnd(gameCtx.wordOfTheDay().length, " ").split("").map((_, idx) => {
+         //    return (
+         //       <GridBlock 
+         //          key={idx} 
+         //          idx={idx} 
+         //          word={m_word}
+         //          gridLength={gameCtx.wordOfTheDay().length}
+         //       />
+         //    )
+         // })
          // m_allBlockData.map((blockData, idx) => {
          //    // return <div key={idx} style={blockData.styles}>{blockData.letter}</div>
          //    return <GridBlock key={idx} idx={idx}/>
