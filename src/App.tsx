@@ -2,11 +2,8 @@ import React from 'react'
 import useInputHandler from './hooks/useInputHandler'
 import Navbar from './components/Navbar'
 import WordleGame from './components/WordleGame'
-import { AppAction, CHAR_STATE, GAME_OP_STATUS, GameLogic, GridRowAction, InputAction, loadRandomWord, CompleteWordAction } from './game/GameLogicHandler'
+import { AppAction, CHAR_STATE, GameLogic, GridRowAction, InputAction, loadRandomWord, CompleteWordAction } from './game/GameLogicHandler'
 import GameKeyboard from './components/GameKeyboard'
-import Sidebar from './components/Sidebar'
-
-const NUM_ROWS = 5
 
 export interface GameContextType {
    wordOfTheDay: () => string
@@ -66,9 +63,10 @@ const App: React.FC = () => {
          }
          
          // TODO: Handle app action
-         if (appAction as CompleteWordAction) {
-            setRowIndex(prevRow => prevRow + 1)
-         }
+         // if (appAction as CompleteWordAction) {
+         //    setRowIndex(prevRow => prevRow + 1)
+         // }
+         
       }
    }, [m_appActionQueue])
 
