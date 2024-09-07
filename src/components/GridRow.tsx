@@ -2,9 +2,8 @@ import React from 'react'
 import { GridRowAction, InputAction, CompleteWordAction, NUM_ROWS, CHAR_STATE } from '../game/GameLogicHandler'
 import { GameContext, GameContextType } from '../App'
 import './GridRow.css'
+import { animateValue, AnimationControls, AnimationScope, useAnimate, useAnimation } from 'framer-motion'
 import GridBlock from './GridBlock'
-import { div } from 'framer-motion/client'
-import { animateValue, AnimationScope, useAnimate } from 'framer-motion'
 
 interface GridRowProps {
    rowIdx: number
@@ -13,10 +12,8 @@ interface GridRowProps {
 class BlockData {
    letter: string
    styles: React.CSSProperties 
-   scope: AnimationScope<any>
-   animate: any
 
-   constructor(scope: AnimationScope<any>, animate: any) {
+   constructor() {
       this.letter = ""
       this.styles = {
          width: "60px", height: "60px",
@@ -24,26 +21,25 @@ class BlockData {
          fontSize: "3rem", fontFamily: "Neue Helvetica", fontWeight: "lighter",
          outline: "2px solid lightgray"
       } as React.CSSProperties
-      this.scope = scope
-      this.animate = animate
    }
 }
 
 const GridRow: React.FC<GridRowProps> = props => {
-   const [m_colIdx, setColIdx] = React.useState<number>(0)
-   const [m_allBlockData, setAllBlockData] = React.useState<BlockData[]>([])
+   // const [m_colIdx, setColIdx] = React.useState<number>(0)
+   // const [m_allBlockData, setAllBlockData] = React.useState<BlockData[]>([])
+
+   // const [m_animControls, setAnimControls] = React.useState<AnimationControls[]>([])
+   const [m_word, setWord] = React.useState<string>("")
+
    const [m_actionQueue, setActionQueue] = React.useState<GridRowAction[]>([])
    const gameCtx = React.useContext(GameContext) as GameContextType
 
-   const [scope, animate] = useAnimate()
+   // const animControls = gameCtx.wordOfTheDay().split("").map(_ => useAnimation())
 
    React.useEffect(() => {
-      const allBlockData: BlockData[] = []
-      for (let i = 0; i < gameCtx.wordOfTheDay().length; i++) {
-         const [scope, animate] = useAnimate()
-         allBlockData.push(new BlockData(scope, animate))
-      }
-      setAllBlockData(allBlockData)
+      // setAllBlockData(
+      //    gameCtx.wordOfTheDay().split("").map(_ => new BlockData())
+      // )
    }, [gameCtx.wordOfTheDay()])
 
    // Pass the 'action queue setter' to the game context
@@ -65,7 +61,20 @@ const GridRow: React.FC<GridRowProps> = props => {
          if (action as InputAction) {
             const inputAction = action as InputAction
             if (inputAction.eventKey === "Backspace" || inputAction.eventKey === "Delete") {
+               // setAllBlockData(oldAllBlockData => {
+               //    if (m_colIdx <= 0) {
+               //       return [...oldAllBlockData]
+               //    }
+               //    const newBlockData = [...oldAllBlockData]
+               //    setColIdx(idx => idx - 1)
+               // 
+               //    // Have to manually input '-1' because m_colIdx isn't updated yet
+               //    // More of React bullshitteru
+               //    newBlockData[m_colIdx - 1].letter = ""                   
+               //    return newBlockData
+               // })
 
+               setWord(oldWord => oldWord.substring(0, oldWord.length - 1))
             }
             else if (inputAction.eventKey === "Enter") {
                // if (m_word.length < gameCtx.wordOfTheDay().length) {
@@ -83,20 +92,22 @@ const GridRow: React.FC<GridRowProps> = props => {
                })
             }
             else if (/^[a-zA-Z]$/.test(inputAction.eventKey)) {
-               setAllBlockData(oldAllBlockData => {
-                  const newBlockData = [...oldAllBlockData] as BlockData[]
-                  newBlockData[m_colIdx].letter = inputAction.eventKey
-                  setColIdx(prevColIndex => prevColIndex + 1)
-                  return newBlockData
-               })
-               // setWord(oldWord => {
-               //    if (oldWord.length >= gameCtx.wordOfTheDay().length) {
-               //       return oldWord
+               // setAllBlockData(oldAllBlockData => {
+               //    if (m_colIdx >= m_allBlockData.length) {
+               //       return [...oldAllBlockData]
                //    }
-               //    const newWord = oldWord + inputAction.eventKey.toLowerCase()
-
-               //    return newWord
+               //    const newBlockData = [...oldAllBlockData] as BlockData[]
+               //    newBlockData[m_colIdx].letter = inputAction.eventKey
+               //    setColIdx(idx => idx + 1)
+               //    return newBlockData
                // })
+               setWord(oldWord => {
+                  if (oldWord.length >= gameCtx.wordOfTheDay().length) {
+                     return oldWord
+                  }
+                  const newWord = oldWord + inputAction.eventKey.toLowerCase()
+                  return newWord
+               })
             }
 
             // console.log("GridRow | Row: ", props.rowIdx, ". Current word: ", m_word)
@@ -106,12 +117,20 @@ const GridRow: React.FC<GridRowProps> = props => {
 
    return (
       <div style={{ display: "flex", gap: "12px" }}>{
-         // m_word.padEnd(gameCtx.wordOfTheDay().length, " ").split("").map((_, idx) => { 
+         m_word.padEnd(gameCtx.wordOfTheDay().length, " ").split("").map((_, idx) => {
+            return (
+               <GridBlock 
+                  key={idx} 
+                  idx={idx} 
+                  word={m_word}
+                  gridLength={gameCtx.wordOfTheDay().length}
+               />
+            )
+         })
+         // m_allBlockData.map((blockData, idx) => {
+         //    // return <div key={idx} style={blockData.styles}>{blockData.letter}</div>
          //    return <GridBlock key={idx} idx={idx}/>
          // })
-         m_allBlockData.map((blockData, idx) => {
-            return <div key={idx} style={blockData.styles}>{blockData.letter}</div>
-         })
       }</div>
    )
 }
