@@ -83,15 +83,13 @@ const App: React.FC = () => {
                setKeyData(oldKeyData => {
                   const newKeyData = new Map(oldKeyData)
                   const oldCharState: CHAR_STATE = m_keyData.get(ch) || CHAR_STATE.NIL
-                  console.log("Old char state: ", oldCharState)
-                  console.log("NewDesired: ", newDesiredCharState)
                   newKeyData.set(
                      ch, Math.max(oldCharState, newDesiredCharState)
                   )
                   return newKeyData
                })
             })
-            // setRowIndex(wordCompletedEvent.completedRowIndex + 1)
+            setRowIndex(wordCompletedEvent.completedRowIndex + 1)
          }
       }
    }, [m_appEventQueue])

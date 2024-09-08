@@ -31,7 +31,6 @@ const GridRow: React.FC<GridRowProps> = props => {
 
    // Every time action queue change is detected, dequeue and handle the actions until empty
    React.useEffect(() => {
-      // console.log("GridRow.tsx, row ", props.rowIdx, "| ActionQueue - Change detected!")
       while (m_eventQueue.length > 0) {
          const gridrowEvent = m_eventQueue.shift() as GridRowEvent
          if (!gridrowEvent || gridrowEvent === null || gridrowEvent === undefined) {
@@ -61,13 +60,40 @@ const GridRow: React.FC<GridRowProps> = props => {
                }
                // TODO: Check if word exists in word bank
 
+               const wordOfTheDay: string = gameCtx.wordOfTheDay() 
+
+               // Pre-fill an array with the desired "char states"
+               const newCharStates: CHAR_STATE[] = []
+               for (let i = 0; i < m_word.length; i++) {
+                  if (m_word.charAt(i) === wordOfTheDay.charAt(i))  {
+                     newCharStates.push(CHAR_STATE.CORRECT)
+                  }
+                  else if (wordOfTheDay.includes(m_word.charAt(i))) {
+                     newCharStates.push(CHAR_STATE.HALF_CORRECT)
+                  }
+                  else  {
+                     newCharStates.push(CHAR_STATE.WRONG)
+                  }
+               }
+
+               // Convert 'newCharStates' array to keyData map
+               // 
+               // Blit the data to the "AppEventQueue"
+               // so it can be used to set the game keyboard highlighting
+               gameCtx.appEventQueueSetter(oldAppEventQueue => {
+                  const keyData = new Map<string,CHAR_STATE>()
+                  newCharStates.forEach((charState, idx) => {
+                     keyData.set(m_word.charAt(idx), charState)
+                  })
+                  return [...oldAppEventQueue, new WordCompletedEvent(keyData, props.rowIdx)]
+               })
+
                const asyncCardFlip = async (idx: number) => {
                   const delay = async(ms: number): Promise<void> => {
                      return new Promise(resolve => setTimeout(resolve, ms))
                   }
                   await delay(100 * idx)
 
-                  const wordOfTheDay: string = gameCtx.wordOfTheDay() 
                   setCharStates(oldCharStates => {
                      const newCharStates = [...oldCharStates] as CHAR_STATE[]
                      if (m_word.charAt(idx) === wordOfTheDay.charAt(idx)) {
@@ -81,16 +107,6 @@ const GridRow: React.FC<GridRowProps> = props => {
                      }
                      return newCharStates
                   })
-                  // // Flipping the last card in the word
-                  // if (idx >= m_word.length - 1) {
-                  //    gameCtx.appEventQueueSetter(oldEventQueue => {
-                  //       const keyData = new Map<string, CHAR_STATE>()
-                  //       m_word.split("").forEach((ch, idx) => {
-                  //          keyData.set(ch, m_charStates[idx])
-                  //       })
-                  //       return [...oldEventQueue, new WordCompletedEvent(keyData)] as AppEvent[]
-                  //    })
-                  // }
                }
                for (let i = 0; i < m_word.length; i++) {
                   asyncCardFlip(i)
@@ -107,16 +123,6 @@ const GridRow: React.FC<GridRowProps> = props => {
          }
       }
    }, [m_eventQueue])
-
-   React.useEffect(() => {
-      gameCtx.appEventQueueSetter(oldEventQueue => {
-         const keyData = new Map<string, CHAR_STATE>()
-         m_word.split("").forEach((ch, idx) => {
-            keyData.set(ch, m_charStates[idx])
-         })
-         return [...oldEventQueue, new WordCompletedEvent(keyData, props.rowIdx)] as AppEvent[]
-      })
-   }, [m_charStates])
 
    return (
       <div ref={scope} style={{ display: "flex", gap: "12px" }}>{
