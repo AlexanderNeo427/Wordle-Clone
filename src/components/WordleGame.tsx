@@ -2,8 +2,7 @@ import React from 'react'
 import GridRow from './GridRow'
 import { NUM_ROWS } from '../game/GameLogicHandler'
 
-interface WordleGameProps {
-}
+interface WordleGameProps {}
 
 const WordleGame: React.FC<WordleGameProps> = () => {
    return (

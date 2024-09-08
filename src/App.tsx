@@ -4,6 +4,7 @@ import Navbar from './components/Navbar'
 import WordleGame from './components/WordleGame'
 import { AppEvent, CHAR_STATE, GameLogic, GridRowEvent, InputEvent, loadRandomWord, WordCompletedEvent } from './game/GameLogicHandler'
 import GameKeyboard from './components/GameKeyboard'
+import PopupMessageContainer from './components/PopupMessageContainer'
 
 export interface GameContextType {
    wordOfTheDay: () => string
@@ -103,6 +104,7 @@ const App: React.FC = () => {
       <GameContext.Provider value={m_gameContext}>
          <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
             {/* <Sidebar /> */}
+            <PopupMessageContainer />
             <Navbar />
             <WordleGame />
             <GameKeyboard keyData={m_keyData} />
