@@ -1,4 +1,4 @@
-import { AnimationControls, useAnimate, useAnimation, Variant } from 'framer-motion'
+import { useAnimate, Variant } from 'framer-motion'
 import React from 'react'
 import { CHAR_STATE } from '../game/GameLogicHandler'
 import { AppColors } from '../globals'
@@ -6,8 +6,6 @@ import { AppColors } from '../globals'
 interface GridBlockProps {
    idx: number
    charArr: string[]
-
-   isRowComplete: boolean
    charState: CHAR_STATE
 }
 
@@ -24,20 +22,22 @@ const getStyles = (idx: number, charArr: string[]): React.CSSProperties => {
    styles.display = "flex" 
    styles.justifyContent = "center"
    styles.alignItems = "center"
-   styles.outline = (ch === " ") ? "2px solid lightgray" : "2px solid darkgray"
+   styles.outline = (ch === " ")? "2px solid lightgray" : "2px solid darkgray"
+   styles.background = "white"
+   styles.color = "black"
    return styles
 }
 
 const colorFromCharState = (charState: CHAR_STATE): string => {
    switch (charState) {
-      case CHAR_STATE.NIL:
-         return "white"
-      case CHAR_STATE.WRONG: 
+      case CHAR_STATE.WRONG:
          return AppColors.GRAY
       case CHAR_STATE.HALF_CORRECT:
          return AppColors.YELLOW
       case CHAR_STATE.CORRECT:
          return AppColors.GREEN
+      default:
+         return "white"
    }
 }
 
@@ -53,18 +53,19 @@ const GridBlock: React.FC<GridBlockProps> = props => {
    }, [props.charArr[props.idx]])
 
    React.useEffect(() => {
-      if (!props.isRowComplete) {
+      if (props.charState === CHAR_STATE.NIL) {
          return
       }
       const animAsync = async () => {
          await animate(scope.current, { rotateX: 90 } as Variant, { duration: 0.25 })
-         await animate(scope.current, { 
-            color: colorFromCharState(props.charState)
+         await animate(scope.current, {
+            background: colorFromCharState(props.charState),
+            color: "white"
          } as Variant, { duration: 0 })
          await animate(scope.current, { rotateX: 0 } as Variant, { duration: 0.25 })
       }
       animAsync()
-   }, [props.isRowComplete])
+   }, [props.charState])
 
    return (
       <div ref={scope} style={getStyles(props.idx, props.charArr)}>

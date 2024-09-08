@@ -7,9 +7,9 @@ export const randIntRange = (min: number, max: number): number => {
     return Math.floor(Math.random() * (max - min)) + min
 }
 //===================================================================================
-export abstract class GridRowAction { }
+export abstract class GridRowEvent { }
 
-export class InputAction extends GridRowAction {
+export class InputEvent extends GridRowEvent {
     eventKey: string
 
     constructor(eventKey: string) {
@@ -18,18 +18,18 @@ export class InputAction extends GridRowAction {
     }
 }
 //===================================================================================
-export abstract class AppAction {}
+export abstract class AppEvent {}
 
-export class CompleteWordAction extends AppAction {
+export class WordCompletedEvent extends AppEvent {
     keyData: Map<string, CHAR_STATE>
+    completedRowIndex: number
 
-    constructor(keyData: Map<string, CHAR_STATE>) {
+    constructor(keyData: Map<string, CHAR_STATE>, completedRowIndex: number) {
         super()
         this.keyData = keyData
+        this.completedRowIndex = completedRowIndex
     }
 }
-
-export class IncompleteWordAction extends AppAction {}
 //===================================================================================
 export enum CHAR_STATE {
     NIL = 0, // NIL state for...reasons

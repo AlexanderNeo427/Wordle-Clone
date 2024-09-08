@@ -38,6 +38,10 @@ const getKeyCSS = (eventKey: string, keyCharState: CHAR_STATE): React.CSSPropert
       css.fontSize = "1.4rem"
    }
 
+   if (keyCharState != CHAR_STATE.NIL) {
+      console.log(eventKey, ": ", keyCharState)
+   }
+
    switch (keyCharState) {
       case CHAR_STATE.CORRECT:
          css.color = "white"
@@ -79,7 +83,7 @@ const GameKeyboard: React.FC<GameKeyboardProps> = props => {
                                  key={keyIdx}
                                  style={getKeyCSS(eventKey, props.keyData.get(eventKey) || CHAR_STATE.NIL)}
                                  onClick={() => {
-                                    console.log("Event Key: ", eventKey)
+                                    // console.log("Event Key: ", eventKey)
                                     gameCtx?.keypressHandler(eventKey)
                                  }}
                               >

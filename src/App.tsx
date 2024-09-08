@@ -2,17 +2,18 @@ import React from 'react'
 import useInputHandler from './hooks/useInputHandler'
 import Navbar from './components/Navbar'
 import WordleGame from './components/WordleGame'
-import { AppAction, CHAR_STATE, GameLogic, GridRowAction, InputAction, loadRandomWord, CompleteWordAction } from './game/GameLogicHandler'
+import { AppEvent, CHAR_STATE, GameLogic, GridRowEvent, InputEvent, loadRandomWord, WordCompletedEvent } from './game/GameLogicHandler'
 import GameKeyboard from './components/GameKeyboard'
 
 export interface GameContextType {
    wordOfTheDay: () => string
+   keypressHandler: (eventKey: string) => void
 
-   gridRowActionQueueSetters: Map<
+   gridRowEventQueueSetters: Map<
       number, // Row index
-      React.Dispatch<React.SetStateAction<GridRowAction[]>>
+      React.Dispatch<React.SetStateAction<GridRowEvent[]>>
    >
-   appActionQueueSetter: React.Dispatch<React.SetStateAction<AppAction[]>>
+   appEventQueueSetter: React.Dispatch<React.SetStateAction<AppEvent[]>>
 }
 
 export const GameContext = React.createContext<GameContextType | undefined>(undefined)
@@ -21,12 +22,24 @@ const App: React.FC = () => {
    // Used for rendering the in-game keyboard
    const [m_rowIndex, setRowIndex] = React.useState<number>(0)
    const [m_keyData, setKeyData] = React.useState<Map<string, CHAR_STATE>>(new Map())
-   const [m_appActionQueue, setActionQueue] = React.useState<AppAction[]>([])
+   const [m_appEventQueue, setAppEventQueue] = React.useState<AppEvent[]>([])
    const [m_gameContext, setGameContext] = React.useState<GameContextType>({
       wordOfTheDay: () => "",
-      gridRowActionQueueSetters: new Map(),
-      appActionQueueSetter: setActionQueue
+      keypressHandler: (_) => {},
+      gridRowEventQueueSetters: new Map(),
+      appEventQueueSetter: setAppEventQueue
    })
+
+   // Enqueue inputAction to the appropriate gridRow's actionQueue
+   const onKeyPress = (eventKey: string): void => {
+      const gridrowActionQueueSetter = m_gameContext.gridRowEventQueueSetters.get(m_rowIndex)
+      if (!gridrowActionQueueSetter) {
+         return
+      }
+      gridrowActionQueueSetter(oldActionQueue => {
+         return [...oldActionQueue, new InputEvent(eventKey)]
+      })
+   }
 
    // Initialize game
    React.useEffect(() => {
@@ -34,6 +47,7 @@ const App: React.FC = () => {
       setGameContext(oldGameCtx => {
          return {
             ...oldGameCtx,
+            keypressHandler: onKeyPress,
             wordOfTheDay: () => wordOfTheDay
          } as GameContextType
       })
@@ -42,33 +56,45 @@ const App: React.FC = () => {
       console.log("App | Word of the day: ", wordOfTheDay)
    }, [])
 
-   // Enqueue inputAction to the appropriate gridRow's actionQueue
-   const onKeyPress = (eventKey: string): void => {
-      const gridrowActionQueueSetter = m_gameContext.gridRowActionQueueSetters.get(m_rowIndex)
-      if (!gridrowActionQueueSetter) {
-         return
-      }
-      gridrowActionQueueSetter(oldActionQueue => {
-         return [...oldActionQueue, new InputAction(eventKey)]
-      })
-      // console.log("App.tsx | onKeyPress - Finished")
-   }
-
-   // Handle any pending actions in the 'AppActionQueue'
+   // If I don't do this - then the "keypressHandler" will go out of date
+   // i.e it will still think m_rowIndex is 0, when in reality it has been incremented
+   //
+   // I don't knot enough about React to understand why, but this fixes it
    React.useEffect(() => {
-      while (m_appActionQueue.length > 0) {
-         const appAction = m_appActionQueue.shift() as AppAction
-         if (appAction == null) {
-            return
+      setGameContext(oldGameCtx => {
+         return {
+            ...oldGameCtx,
+            keypressHandler: onKeyPress,
+         } as GameContextType
+      })
+   }, [m_rowIndex])
+
+   // Handle any pending actions in the 'AppEventQueue'
+   React.useEffect(() => {
+      while (m_appEventQueue.length > 0) {
+         const appEvent = m_appEventQueue.shift() as AppEvent
+         if (!appEvent || appEvent == null || appEvent === undefined) {
+            continue
          }
-         
-         // TODO: Handle app action
-         // if (appAction as CompleteWordAction) {
-         //    setRowIndex(prevRow => prevRow + 1)
-         // }
-         
+
+         if (appEvent as WordCompletedEvent) {
+            const wordCompletedEvent = appEvent as WordCompletedEvent
+            wordCompletedEvent.keyData.forEach((newDesiredCharState: CHAR_STATE, ch: string) => {
+               setKeyData(oldKeyData => {
+                  const newKeyData = new Map(oldKeyData)
+                  const oldCharState: CHAR_STATE = m_keyData.get(ch) || CHAR_STATE.NIL
+                  console.log("Old char state: ", oldCharState)
+                  console.log("NewDesired: ", newDesiredCharState)
+                  newKeyData.set(
+                     ch, Math.max(oldCharState, newDesiredCharState)
+                  )
+                  return newKeyData
+               })
+            })
+            // setRowIndex(wordCompletedEvent.completedRowIndex + 1)
+         }
       }
-   }, [m_appActionQueue])
+   }, [m_appEventQueue])
 
    useInputHandler((evt: KeyboardEvent) => {
       evt.preventDefault()
