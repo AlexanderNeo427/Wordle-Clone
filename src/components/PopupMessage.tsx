@@ -28,8 +28,10 @@ const PopupMessage: React.FC<PopupMessageProps> = props => {
       }
       const asyncAnim = async () => {
          await delay(2)
-         await animate(scope.current, { opacity: 0 } as Variant, { duration: 0.85 })
+         await animate(scope.current, { opacity: 0.001 } as Variant, { duration: 0.85 })
          props.popupMessagesRemover(props.id)
+
+         // console.log("PopupMessage | Done animating...", props.id)
       }
       asyncAnim()
    }, [])

@@ -25,10 +25,12 @@ const getContainerStyles = (): React.CSSProperties => {
 class PopupMessageData {
    id: number
    content: string
+   flaggedForRemoval: boolean 
 
    constructor(id: number, content: string) {
       this.id = id
       this.content = content
+      this.flaggedForRemoval = false
    }
 }
 
@@ -41,7 +43,7 @@ const PopupMessageContainer: React.FC = () => {
       if (evt.key !== "Backspace") {
          return
       }
-      console.log("PopupMessageContainer | Backspace was pressed....")
+      // console.log("PopupMessageContainer | Backspace was pressed....")
       setNextAvailableID(id => {
          const nextID = id + 1
          setPopupMessagesData(popupMessagesData => {
@@ -54,15 +56,22 @@ const PopupMessageContainer: React.FC = () => {
       })
    })
    
-   const popupMessageRemover = (idToRemove: number): void => {
+   const flagMessageForRemoval = (idToFlag: number): void => {
       setPopupMessagesData(popupMessages => {
-         return popupMessages.filter(msg => msg.id !== idToRemove)
+         // 'newPopupMessages' - copy of popupMessages, but with the msg of 'idToFlag' being flagged for removal
+         const newPopupMessages = popupMessages.map(msg => {
+            return msg.id === idToFlag ? 
+               {...msg, flaggedForRemoval: true } as PopupMessageData : msg
+         }) as PopupMessageData[]
+
+         // If ALL messages are flagged for removal - clear everything (return empty arr)
+         const messagesFlaggedForRemoval = newPopupMessages.filter(msg => msg.flaggedForRemoval) as PopupMessageData[]
+         if (messagesFlaggedForRemoval.length === newPopupMessages.length) {
+            return []
+         }
+         return newPopupMessages
       })
    }
-
-   React.useEffect(() => {
-      console.log("PopupMessageContainer: ", m_popupMessagesData)
-   }, [m_popupMessagesData])
 
    return (
       <div style={getContainerStyles()}>{
@@ -71,7 +80,7 @@ const PopupMessageContainer: React.FC = () => {
                <PopupMessage
                   key={msgData.id} id={msgData.id}
                   content={msgData.content}
-                  popupMessagesRemover={popupMessageRemover}
+                  popupMessagesRemover={flagMessageForRemoval}
                />
             )
          })
