@@ -34,6 +34,8 @@ export interface GameContextType {
 export const GameContext = React.createContext<GameContextType | undefined>(undefined)
 
 const App: React.FC = () => {
+   const [m_isInputEnabled, setInputEnabled] = React.useState<boolean>(true)
+
    // Used for rendering the in-game keyboard
    const [m_keyData, setKeyData] = React.useState<Map<string, CHAR_STATE>>(new Map())
 
@@ -74,6 +76,9 @@ const App: React.FC = () => {
 
    // Enqueue inputAction to the appropriate gridRow's actionQueue
    const onKeyPress = (eventKey: string): void => {
+      if (!m_isInputEnabled) {
+         return
+      }
       const gridrowActionQueueSetter = m_gameContext.gridRowEventQueueSetters.get(m_rowIndex)
       if (!gridrowActionQueueSetter) {
          return
@@ -85,6 +90,8 @@ const App: React.FC = () => {
 
    // Initialize game
    React.useEffect(() => {
+      setInputEnabled(true)
+
       const setOfAllWords: Set<string> = loadWordList()
       setWordSet(setOfAllWords)
       const randomWord: string = [...setOfAllWords][randIntRange(0, setOfAllWords.size - 1)]
@@ -138,8 +145,11 @@ const App: React.FC = () => {
                })
             })
             setRowIndex(wordCompletedEvent.completedRowIndex + 1)
-         }
 
+            if (wordCompletedEvent.guessIsCorrect) {
+               setInputEnabled(false)
+            }
+         }
       }
    }, [m_appEventQueue])
 
@@ -152,7 +162,10 @@ const App: React.FC = () => {
       <GameContext.Provider value={m_gameContext}>
          <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
             {/* <Sidebar /> */}
-            <PopupMessageContainer allPopupMessageData={m_popupMessagesData} popupMessageDataSetter={setPopupMessagesData} />
+            <PopupMessageContainer 
+               allPopupMessageData={m_popupMessagesData} 
+               popupMessageDataSetter={setPopupMessagesData} 
+            />
             <Navbar />
             <WordleGame />
             <GameKeyboard keyData={m_keyData} />

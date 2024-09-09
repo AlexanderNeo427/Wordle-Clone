@@ -1,5 +1,5 @@
 import React from 'react'
-import { GridRowEvent, InputEvent, WordCompletedEvent, CHAR_STATE, AppEvent, NotEnoughLettersEvent } from '../game/GameLogicHandler'
+import { GridRowEvent, InputEvent, WordCompletedEvent, CHAR_STATE } from '../game/GameLogicHandler'
 import { GameContext, GameContextType } from '../App'
 import './GridRow.css'
 import GridBlock from './GridBlock'
@@ -11,9 +11,10 @@ interface GridRowProps {
 
 const GridRow: React.FC<GridRowProps> = props => {
    const [m_word, setWord] = React.useState<string>("")
-   // const [m_isRowComplete, setIsRowComplete] = React.useState<boolean>(false)
    const [m_charStates, setCharStates] = React.useState<CHAR_STATE[]>([])
    const [m_eventQueue, setEventQueue] = React.useState<GridRowEvent[]>([])
+   const [m_guessedCorrectly, setGuessedCorrectly] = React.useState<boolean>(false)
+
    const [scope, animate] = useAnimate()
    const gameCtx = React.useContext(GameContext) as GameContextType
 
@@ -93,7 +94,11 @@ const GridRow: React.FC<GridRowProps> = props => {
                   newCharStates.forEach((charState, idx) => {
                      keyData.set(m_word.charAt(idx), charState)
                   })
-                  const evt = new WordCompletedEvent(keyData, props.rowIdx)
+                  const guessIsCorrect: boolean = m_word === gameCtx.wordOfTheDay()
+                  if (guessIsCorrect) {
+                     setGuessedCorrectly(true)
+                  }
+                  const evt = new WordCompletedEvent(keyData, props.rowIdx, guessIsCorrect)
                   return [...oldAppEventQueue, evt]
                })
 
@@ -147,6 +152,7 @@ const GridRow: React.FC<GridRowProps> = props => {
                      key={idx} idx={idx}
                      charArr={charArr}
                      charState={m_charStates[idx] || CHAR_STATE.NIL}
+                     guessIsCorrect={m_guessedCorrectly}
                   />
                )
             })

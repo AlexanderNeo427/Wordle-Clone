@@ -23,11 +23,13 @@ export abstract class AppEvent {}
 export class WordCompletedEvent extends AppEvent {
     keyData: Map<string, CHAR_STATE>
     completedRowIndex: number
+    guessIsCorrect: boolean
 
-    constructor(keyData: Map<string, CHAR_STATE>, completedRowIndex: number) {
+    constructor(keyData: Map<string, CHAR_STATE>, completedRowIndex: number, guessIsCorrect: boolean) {
         super()
         this.keyData = keyData
         this.completedRowIndex = completedRowIndex
+        this.guessIsCorrect = guessIsCorrect
     }
 }
 

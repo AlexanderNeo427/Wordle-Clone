@@ -2,11 +2,14 @@ import { useAnimate, Variant } from 'framer-motion'
 import React from 'react'
 import { CHAR_STATE } from '../game/GameLogicHandler'
 import { AppColors } from '../globals'
+import { GameContext } from '../App'
 
 interface GridBlockProps {
    idx: number
    charArr: string[]
    charState: CHAR_STATE
+
+   guessIsCorrect: boolean
 }
 
 const getStyles = (idx: number, charArr: string[]): React.CSSProperties => {
@@ -19,10 +22,10 @@ const getStyles = (idx: number, charArr: string[]): React.CSSProperties => {
    styles.fontSize = "3rem"
    styles.fontFamily = "Neue Helvetica"
    styles.fontWeight = "lighter"
-   styles.display = "flex" 
+   styles.display = "flex"
    styles.justifyContent = "center"
    styles.alignItems = "center"
-   styles.outline = (ch === " ")? "2px solid lightgray" : "2px solid darkgray"
+   styles.outline = (ch === " ") ? "2px solid lightgray" : "2px solid darkgray"
    styles.background = "white"
    styles.color = "black"
    return styles
@@ -43,6 +46,31 @@ const colorFromCharState = (charState: CHAR_STATE): string => {
 
 const GridBlock: React.FC<GridBlockProps> = props => {
    const [scope, animate] = useAnimate()
+   const m_gameCtx = React.useContext(GameContext)
+
+   React.useEffect(() => {
+      if (!props.guessIsCorrect) {
+         return
+      }
+    
+      const delay = async (seconds: number): Promise<void> => {
+         return new Promise(resolve => setTimeout(resolve, seconds * 1000))
+      }
+      const cardDanceAnim = async(): Promise<void> => {
+         await delay((props.charArr.length * 0.12) + (props.idx * 0.1)) 
+
+         // Last card - Responsible for pushing the congratulatory message to the user
+         if (props.idx === props.charArr.length - 1) {
+            m_gameCtx?.pushMessage("Great!") 
+         }
+
+         for (let y = 18; y > 0; y-=3.5) {
+            await animate(scope.current, { translateY: -y } as Variant, { duration: 0.1 })
+            await animate(scope.current, { translateY: 0 } as Variant, { duration: 0.1 })
+         }
+      }
+      cardDanceAnim()
+   }, [props.guessIsCorrect])
 
    React.useEffect(() => {
       const animAsync = async () => {

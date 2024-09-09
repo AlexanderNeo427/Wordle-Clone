@@ -6,7 +6,7 @@ interface WordleGameProps {}
 
 const WordleGame: React.FC<WordleGameProps> = () => {
    return (
-      <div style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
+      <div style={{ display: "flex", justifyContent: "center", alignItems: "center", paddingTop: "1rem" }}>
          <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}> {
             (() => {
                const gridRows: JSX.Element[] = []
