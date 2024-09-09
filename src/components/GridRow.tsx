@@ -139,7 +139,7 @@ const GridRow: React.FC<GridRowProps> = props => {
    }, [m_eventQueue])
 
    return (
-      <div ref={scope} style={{ display: "flex", gap: "12px" }}>{
+      <div ref={scope} style={{ display: "flex", gap: "0.5rem" }}>{
          ((): JSX.Element[] => {
             const elems: JSX.Element[] = []
 

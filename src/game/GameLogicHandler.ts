@@ -1,3 +1,5 @@
+import { MASTER_WORDLIST } from "../wordlist"
+
 export const WORD_LENGTH = 5
 export const NUM_ROWS = 6
 
@@ -51,9 +53,17 @@ export enum GAME_OP_STATUS {
 }
 
 export const loadWordList = (): Set<string> => {
-    return new Set<string>([
-        "argue", "arise", "audio", "cow", "block", "blooood", "shart", "fart", "supercalifrag"
-    ])
+    const MIN_LENGTH = 4 
+    const setOfWords = new Set<string>()
+    MASTER_WORDLIST.forEach((word: string) => {
+        if (word.length >= MIN_LENGTH) {
+            setOfWords.add(word.toLowerCase())
+        }
+    }) 
+    return setOfWords
+    // return new Set<string>([
+    //     "argue", "arise", "audio", "cow", "block", "blooood", "shart", "fart", "supercalifrag"
+    // ])
 }
 
 export class GameLogic {

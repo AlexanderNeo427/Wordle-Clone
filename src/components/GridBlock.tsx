@@ -16,10 +16,10 @@ const getStyles = (idx: number, charArr: string[]): React.CSSProperties => {
    const ch: string = charArr[idx]
 
    const styles = {} as React.CSSProperties
-   styles.width = "60px"
-   styles.height = "60px"
+   styles.width = "3.7rem"
+   styles.height = "3.7rem"
    styles.textAlign = "center"
-   styles.fontSize = "3rem"
+   styles.fontSize = "2.8rem"
    styles.fontFamily = "Neue Helvetica"
    styles.fontWeight = "lighter"
    styles.display = "flex"
