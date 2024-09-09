@@ -15,6 +15,11 @@ export interface GameContextType {
       React.Dispatch<React.SetStateAction<GridRowEvent[]>>
    >
    appEventQueueSetter: React.Dispatch<React.SetStateAction<AppEvent[]>>
+
+   messagePusher: (message: string) => void
+   messagePusherSetter: (msgPusher: (msg: string) => void) => void
+
+   gameContextSetter: React.Dispatch<React.SetStateAction<GameContextType>> 
 }
 
 export const GameContext = React.createContext<GameContextType | undefined>(undefined)
@@ -28,7 +33,11 @@ const App: React.FC = () => {
       wordOfTheDay: () => "",
       keypressHandler: (_) => {},
       gridRowEventQueueSetters: new Map(),
-      appEventQueueSetter: setAppEventQueue
+      appEventQueueSetter: setAppEventQueue, 
+
+      messagePusher: () => {},
+      messagePusherSetter: () => {},
+      gameContextSetter: () => {}
    })
 
    // Enqueue inputAction to the appropriate gridRow's actionQueue
@@ -44,15 +53,26 @@ const App: React.FC = () => {
 
    // Initialize game
    React.useEffect(() => {
+      const setMessagePusher = (msgPusher: (msg: string) => void): void => {
+         setGameContext(oldGameCtx => {
+            return {...oldGameCtx, messagePusher: msgPusher}
+         })
+      }
+
       const wordOfTheDay = loadRandomWord()
       setGameContext(oldGameCtx => {
          return {
             ...oldGameCtx,
             keypressHandler: onKeyPress,
-            wordOfTheDay: () => wordOfTheDay
+            wordOfTheDay: () => wordOfTheDay, 
+            messagePusherSetter: setMessagePusher, 
+            gameContextSetter: setGameContext
          } as GameContextType
       })
       setKeyData(GameLogic.initializeKeyData())
+
+      // console.log("Message pusher: ", m_gameContext.pushMesage)
+      // m_gameContext.messagePusher("A really random message")
 
       console.log("App | Word of the day: ", wordOfTheDay)
    }, [])

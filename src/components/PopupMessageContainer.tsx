@@ -1,6 +1,7 @@
 import React from 'react'
 import useInputHandler from '../hooks/useInputHandler'
 import PopupMessage from './PopupMessage'
+import { GameContext, GameContextType } from '../App'
 
 const getContainerStyles = (): React.CSSProperties => {
    const css = {} as React.CSSProperties
@@ -37,31 +38,28 @@ class PopupMessageData {
 const PopupMessageContainer: React.FC = () => {
    const [m_popupMessagesData, setPopupMessagesData] = React.useState<PopupMessageData[]>([])
    const [_, setNextAvailableID] = React.useState<number>(0)
+   const m_gameCtx = React.useContext(GameContext)
 
-   useInputHandler((evt: KeyboardEvent) => {
-      // console.log("PopupMessageContainer - Key Pressed: ", evt.key)
-      if (evt.key !== "Backspace") {
-         return
-      }
-      // console.log("PopupMessageContainer | Backspace was pressed....")
+   const pushMessage = (message: string): void => {
       setNextAvailableID(id => {
          const nextID = id + 1
          setPopupMessagesData(popupMessagesData => {
-            return [
-               new PopupMessageData(nextID, "Message of ID: " + nextID),
-               ...popupMessagesData
-            ]
+            return [new PopupMessageData(nextID, message), ...popupMessagesData]
          })
          return nextID
       })
-   })
-   
+   }
+
+   React.useEffect(() => {
+      m_gameCtx?.messagePusherSetter(pushMessage)  
+   }, [pushMessage])
+
    const flagMessageForRemoval = (idToFlag: number): void => {
       setPopupMessagesData(popupMessages => {
          // 'newPopupMessages' - copy of popupMessages, but with the msg of 'idToFlag' being flagged for removal
          const newPopupMessages = popupMessages.map(msg => {
-            return msg.id === idToFlag ? 
-               {...msg, flaggedForRemoval: true } as PopupMessageData : msg
+            return msg.id === idToFlag ?
+               { ...msg, flaggedForRemoval: true } as PopupMessageData : msg
          }) as PopupMessageData[]
 
          // If ALL messages are flagged for removal - clear everything (return empty arr)
