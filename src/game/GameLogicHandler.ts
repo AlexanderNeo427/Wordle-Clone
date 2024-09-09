@@ -30,6 +30,8 @@ export class WordCompletedEvent extends AppEvent {
         this.completedRowIndex = completedRowIndex
     }
 }
+
+export class NotEnoughLettersEvent extends AppEvent {}
 //===================================================================================
 export enum CHAR_STATE {
     NIL = 0, // NIL state for...reasons
@@ -46,12 +48,10 @@ export enum GAME_OP_STATUS {
     NOT_IN_WORDLIST
 }
 
-// TODO: Load from wordlist yadayada
-export const loadRandomWord = (): string => {
-    const wordlist: string[] = [
+export const loadWordList = (): Set<string> => {
+    return new Set<string>([
         "argue", "arise", "audio", "cow", "block", "blooood", "shart", "fart", "supercalifrag"
-    ]
-    return wordlist[randIntRange(0, wordlist.length - 1)]
+    ])
 }
 
 export class GameLogic {

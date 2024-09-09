@@ -2,23 +2,32 @@ import React from 'react'
 import useInputHandler from './hooks/useInputHandler'
 import Navbar from './components/Navbar'
 import WordleGame from './components/WordleGame'
-import { AppEvent, CHAR_STATE, GameLogic, GridRowEvent, InputEvent, loadRandomWord, WordCompletedEvent } from './game/GameLogicHandler'
+import { AppEvent, CHAR_STATE, GameLogic, GridRowEvent, InputEvent, loadWordList, randIntRange, WordCompletedEvent } from './game/GameLogicHandler'
 import GameKeyboard from './components/GameKeyboard'
 import PopupMessageContainer from './components/PopupMessageContainer'
 
+export class PopupMessageData {
+   id: number
+   content: string
+   flaggedForRemoval: boolean 
+
+   constructor(id: number, content: string) {
+      this.id = id
+      this.content = content
+      this.flaggedForRemoval = false
+   }
+}
+
 export interface GameContextType {
    wordOfTheDay: () => string
+   wordset: Set<string>
    keypressHandler: (eventKey: string) => void
-
    gridRowEventQueueSetters: Map<
       number, // Row index
       React.Dispatch<React.SetStateAction<GridRowEvent[]>>
    >
    appEventQueueSetter: React.Dispatch<React.SetStateAction<AppEvent[]>>
-
-   messagePusher: (message: string) => void
-   messagePusherSetter: (msgPusher: (msg: string) => void) => void
-
+   pushMessage: (message: string) => void
    gameContextSetter: React.Dispatch<React.SetStateAction<GameContextType>> 
 }
 
@@ -26,19 +35,42 @@ export const GameContext = React.createContext<GameContextType | undefined>(unde
 
 const App: React.FC = () => {
    // Used for rendering the in-game keyboard
-   const [m_rowIndex, setRowIndex] = React.useState<number>(0)
    const [m_keyData, setKeyData] = React.useState<Map<string, CHAR_STATE>>(new Map())
+
+   // Keeping track of current row
+   const [m_rowIndex, setRowIndex] = React.useState<number>(0)
+
+   // Queue of "Popup Message" dialogues - Keep track of the next available ID for the messages
+   const [m_popupMessagesData, setPopupMessagesData] = React.useState<PopupMessageData[]>([])
+   const [_, setNextAvailableID] = React.useState<number>(0)
+
+   const [m_wordSet, setWordSet] = React.useState<Set<string>>(new Set())
    const [m_appEventQueue, setAppEventQueue] = React.useState<AppEvent[]>([])
    const [m_gameContext, setGameContext] = React.useState<GameContextType>({
       wordOfTheDay: () => "",
-      keypressHandler: (_) => {},
-      gridRowEventQueueSetters: new Map(),
-      appEventQueueSetter: setAppEventQueue, 
+      wordset: m_wordSet, 
 
-      messagePusher: () => {},
-      messagePusherSetter: () => {},
-      gameContextSetter: () => {}
+      keypressHandler: (_) => { },
+      gridRowEventQueueSetters: new Map(),
+      appEventQueueSetter: setAppEventQueue,
+      pushMessage: () => { },
+      gameContextSetter: () => { }
    })
+
+   const messagePusher = (message: string): void => {
+      setNextAvailableID(id => {
+         const nextID = id + 1
+
+         setPopupMessagesData(popupMessagesData => {
+            const MAX_MESSAGES = 7
+            while (popupMessagesData.length >= MAX_MESSAGES) {
+               popupMessagesData.pop()
+            }
+            return [new PopupMessageData(nextID, message), ...popupMessagesData]
+         })
+         return nextID
+      })
+   }
 
    // Enqueue inputAction to the appropriate gridRow's actionQueue
    const onKeyPress = (eventKey: string): void => {
@@ -53,34 +85,29 @@ const App: React.FC = () => {
 
    // Initialize game
    React.useEffect(() => {
-      const setMessagePusher = (msgPusher: (msg: string) => void): void => {
-         setGameContext(oldGameCtx => {
-            return {...oldGameCtx, messagePusher: msgPusher}
-         })
-      }
+      const setOfAllWords: Set<string> = loadWordList()
+      setWordSet(setOfAllWords)
+      const randomWord: string = [...setOfAllWords][randIntRange(0, setOfAllWords.size - 1)]
 
-      const wordOfTheDay = loadRandomWord()
       setGameContext(oldGameCtx => {
          return {
             ...oldGameCtx,
             keypressHandler: onKeyPress,
-            wordOfTheDay: () => wordOfTheDay, 
-            messagePusherSetter: setMessagePusher, 
+            wordOfTheDay: () => randomWord,
+            wordset: setOfAllWords,
+            pushMessage: messagePusher,
             gameContextSetter: setGameContext
          } as GameContextType
       })
       setKeyData(GameLogic.initializeKeyData())
 
-      // console.log("Message pusher: ", m_gameContext.pushMesage)
-      // m_gameContext.messagePusher("A really random message")
-
-      console.log("App | Word of the day: ", wordOfTheDay)
+      console.log("App | Word of the day: ", randomWord)
    }, [])
 
    // If I don't do this - then the "keypressHandler" will go out of date
    // i.e it will still think m_rowIndex is 0, when in reality it has been incremented
    //
-   // I don't knot enough about React to understand why, but this fixes it
+   // I don't know enough about React to understand why, but this fixes it
    React.useEffect(() => {
       setGameContext(oldGameCtx => {
          return {
@@ -112,6 +139,7 @@ const App: React.FC = () => {
             })
             setRowIndex(wordCompletedEvent.completedRowIndex + 1)
          }
+
       }
    }, [m_appEventQueue])
 
@@ -124,7 +152,7 @@ const App: React.FC = () => {
       <GameContext.Provider value={m_gameContext}>
          <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
             {/* <Sidebar /> */}
-            <PopupMessageContainer />
+            <PopupMessageContainer allPopupMessageData={m_popupMessagesData} popupMessageDataSetter={setPopupMessagesData} />
             <Navbar />
             <WordleGame />
             <GameKeyboard keyData={m_keyData} />
