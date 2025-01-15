@@ -2,7 +2,7 @@ import React from 'react'
 import './Sidebar.css'
 
 const Sidebar: React.FC = () => {
-   const [m_isOpen, setIsOpen] = React.useState<boolean>(false)
+   // const [m_isOpen, setIsOpen] = React.useState<boolean>(false)
 
    return (
       <aside className="sidebar" style={{
