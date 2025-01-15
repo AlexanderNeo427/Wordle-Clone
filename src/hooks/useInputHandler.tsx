@@ -7,7 +7,7 @@ const useInputHandler = (inputHandler: (evt: KeyboardEvent) => void): void => {
       return () => {
          window.removeEventListener('keydown', inputHandler)
       }
-   }, [inputHandler])   
+   }, [inputHandler])
 }
 
 export default useInputHandler

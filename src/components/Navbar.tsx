@@ -3,7 +3,7 @@ import './Navbar.css'
 
 const Navbar: React.FC = () => {
    return (
-      <nav className='navbar'> 
+      <nav className='navbar'>
          <span className="material-symbols-outlined navbar-btn">menu</span>
          <div style={{ display: "flex", alignItems: "center" }}>
             <span className="material-symbols-outlined navbar-btn">lightbulb</span>
@@ -12,10 +12,10 @@ const Navbar: React.FC = () => {
             <span className="material-symbols-outlined navbar-btn">settings</span>
 
             {/* Provides gap */}
-            <div style={{ minWidth: "1rem" }}/>
+            <div style={{ minWidth: "1rem" }} />
 
-            <button style={{ 
-               borderRadius: "50px", 
+            <button style={{
+               borderRadius: "50px",
                border: "none",
                outline: "2px solid black",
                boxShadow: "0px 0px",

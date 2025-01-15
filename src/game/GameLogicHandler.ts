@@ -20,7 +20,7 @@ export class InputEvent extends GridRowEvent {
     }
 }
 //===================================================================================
-export abstract class AppEvent {}
+export abstract class AppEvent { }
 
 export class WordCompletedEvent extends AppEvent {
     keyData: Map<string, CHAR_STATE>
@@ -35,7 +35,7 @@ export class WordCompletedEvent extends AppEvent {
     }
 }
 
-export class NotEnoughLettersEvent extends AppEvent {}
+export class NotEnoughLettersEvent extends AppEvent { }
 //===================================================================================
 export enum CHAR_STATE {
     NIL = 0, // NIL state for...reasons
@@ -53,13 +53,13 @@ export enum GAME_OP_STATUS {
 }
 
 export const loadWordList = (): Set<string> => {
-    const MIN_LENGTH = 4 
+    const MIN_LENGTH = 4
     const setOfWords = new Set<string>()
     MASTER_WORDLIST.forEach((word: string) => {
         if (word.length >= MIN_LENGTH) {
             setOfWords.add(word.toLowerCase())
         }
-    }) 
+    })
     return setOfWords
     // return new Set<string>([
     //     "argue", "arise", "audio", "cow", "block", "blooood", "shart", "fart", "supercalifrag"
