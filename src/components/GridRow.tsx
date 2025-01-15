@@ -1,7 +1,6 @@
 import React from 'react'
 import { GridRowEvent, InputEvent, WordCompletedEvent, CHAR_STATE } from '../game/GameLogicHandler'
 import { GameContext, GameContextType } from '../App'
-import './GridRow.css'
 import GridBlock from './GridBlock'
 import { useAnimate, Variant } from 'framer-motion'
 
